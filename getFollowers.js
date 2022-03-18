@@ -12,11 +12,7 @@ async function main() {
     try {
       const id = process.env.TWITTER_USER_ID;
       const url = new URL(`https://api.twitter.com/2/users/${id}/followers`);
-      url.search = new URLSearchParams(
-        next_token
-          ? { max_results, pagination_token: next_token }
-          : { max_results }
-      );
+      url.search = new URLSearchParams(next_token ? { max_results, pagination_token: next_token } : { max_results });
 
       const response = await fetch(url, {
         headers: {
@@ -37,10 +33,7 @@ async function main() {
 
   await getFollowers();
 
-  if (followers.length)
-    writeFile("./followers.json", JSON.stringify(followers), (err) =>
-      console.error(err)
-    );
+  if (followers.length) writeFile("./followers.json", JSON.stringify(followers), (err) => console.error(err));
 
   return console.log("done");
 }
