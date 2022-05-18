@@ -9,7 +9,9 @@ async function main() {
   let max_results = 1000;
 
   async function getFollowers(next_token) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // timeout not to hammer the API
+    if (next_token) await new Promise((resolve) => setTimeout(resolve, 5000));
+
     try {
       const id = process.env.TWITTER_USER_ID;
       const url = new URL(`https://api.twitter.com/2/users/${id}/followers`);
