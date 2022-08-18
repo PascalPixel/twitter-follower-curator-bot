@@ -1,14 +1,10 @@
 {
   "type": "module",
   "scripts": {
-    "getFollowers": "node getFollowers.js"
+    "start": "node main.js"
   },
   "dependencies": {
     "dotenv": "^16.0.0",
-    "node-fetch": "^3.2.3",
-    "twitter": "^1.7.1"
-  },
-  "prettier": {
-    "printWidth": 130
+    "node-fetch": "^3.2.3"
   }
 }
