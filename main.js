@@ -27,8 +27,8 @@ async function getFollowers() {
   while (followersRes.meta.next_token) {
     console.log("Getting followers... " + followersRes.meta.next_token);
 
-    // 5s timeout to avoid hitting rate limit
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    // 1 call per minute to avoid hitting rate limit
+    await new Promise((resolve) => setTimeout(resolve, 1000 * 60));
 
     followersRes = await twitterClient.followers(
       process.env.TWITTER_USER_ID,
@@ -63,8 +63,8 @@ async function getFollowing() {
   while (followingRes.meta.next_token) {
     console.log("Getting following... " + followingRes.meta.next_token);
 
-    // 5s timeout to avoid hitting rate limit
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    // 1 call per minute to avoid hitting rate limit
+    await new Promise((resolve) => setTimeout(resolve, 1000 * 60));
 
     followingRes = await twitterClient.following(
       process.env.TWITTER_USER_ID,
