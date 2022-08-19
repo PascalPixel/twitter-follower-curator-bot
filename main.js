@@ -17,34 +17,34 @@ async function getFollowers() {
   }
 
   /** @type import("twitter-api-v2").UserV2[] */
-  const users = [];
+  const followers = [];
   /** @type import("twitter-api-v2").UserV2TimelineResult */
-  let usersRes = {
+  let followersRes = {
     data: [],
     meta: { result_count: 100, next_token: "x" },
   };
 
-  while (usersRes.meta.next_token) {
-    console.log("Getting users... " + usersRes.meta.next_token);
+  while (followersRes.meta.next_token) {
+    console.log("Getting followers... " + followersRes.meta.next_token);
 
     // 5s timeout to avoid hitting rate limit
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    usersRes = await twitterClient.users(
+    followersRes = await twitterClient.followers(
       process.env.TWITTER_USER_ID,
-      usersRes.meta.next_token === "x"
+      followersRes.meta.next_token === "x"
         ? {}
-        : { pagination_token: usersRes.meta.next_token }
+        : { pagination_token: followersRes.meta.next_token }
     );
-    usersRes.data.forEach((user) => {
-      users.push(user);
+    followersRes.data.forEach((user) => {
+      followers.push(user);
     });
 
     // list total
-    console.log("Got " + users.length + " users");
+    console.log("Got " + followers.length + " followers");
   }
 
-  return users;
+  return followers;
 }
 
 async function getFollowing() {
@@ -92,8 +92,11 @@ async function getDataForToday() {
     JSON.stringify(following, null, 2)
   );
 
-  const users = await getFollowers();
-  await writeFile(`./cache/users-${date}.json`, JSON.stringify(users, null, 2));
+  const followers = await getFollowers();
+  await writeFile(
+    `./cache/followers-${date}.json`,
+    JSON.stringify(followers, null, 2)
+  );
 }
 
 async function compareUsers(type = "followers") {
@@ -129,7 +132,6 @@ async function compareUsers(type = "followers") {
   const usersYesterday = JSON.parse(secondMostRecentFileData);
 
   // Find usersYesterday not in usersToday
-
   const lost = usersYesterday.filter((user) => {
     return !usersToday.some((userToday) => user.id === userToday.id);
   });
