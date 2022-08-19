@@ -1,4 +1,6 @@
-node_modules/
-.env
-followers.json
-following.json
+/node_modules/
+/.env
+/cache/**/*
+/followers.json
+/following.json
+.DS_Store
