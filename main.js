@@ -25,6 +25,8 @@ async function getFollowers() {
   };
 
   while (followersRes.meta.next_token) {
+    console.log("Getting followers... " + followersRes.meta.next_token);
+
     // 5s timeout to avoid hitting rate limit
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
@@ -37,6 +39,9 @@ async function getFollowers() {
     followersRes.data.forEach((user) => {
       followers.push(user);
     });
+
+    // list total
+    console.log("Got " + followers.length + " followers");
   }
 
   return followers;
@@ -56,6 +61,8 @@ async function getFollowing() {
   };
 
   while (followingRes.meta.next_token) {
+    console.log("Getting following... " + followingRes.meta.next_token);
+
     // 5s timeout to avoid hitting rate limit
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
@@ -68,6 +75,9 @@ async function getFollowing() {
     followingRes.data.forEach((user) => {
       following.push(user);
     });
+
+    // list total
+    console.log("Got " + following.length + " following");
   }
 
   return following;
