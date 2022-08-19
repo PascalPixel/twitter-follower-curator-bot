@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "dotenv": "^16.0.0",
-    "node-fetch": "^3.2.3"
+    "node-fetch": "^3.2.3",
+    "twitter-api-v2": "^1.12.5"
   }
 }
