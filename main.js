@@ -83,7 +83,7 @@ async function getFollowing() {
   return following;
 }
 
-async function getDataForToday() {
+async function getDataForCurrent() {
   const date = new Date().toISOString().split("T")[0];
 
   const following = await getFollowing();
@@ -118,7 +118,7 @@ async function compareUsers(type = "followers") {
   const mostRecentFile = `./cache/${type}-${mostRecentFileDate}.json`;
   const mostRecentFileData = await readFile(mostRecentFile, "utf-8");
   /** @type import("twitter-api-v2").UserV2[] */
-  const usersToday = JSON.parse(mostRecentFileData);
+  const usersCurrent = JSON.parse(mostRecentFileData);
 
   // Get second most recent file
   const secondMostRecentFileDate =
@@ -129,22 +129,20 @@ async function compareUsers(type = "followers") {
     "utf-8"
   );
   /** @type import("twitter-api-v2").UserV2[] */
-  const usersYesterday = JSON.parse(secondMostRecentFileData);
+  const usersPrev = JSON.parse(secondMostRecentFileData);
 
-  // Find usersYesterday not in usersToday
-  const lost = usersYesterday.filter((user) => {
-    return !usersToday.some((userToday) => user.id === userToday.id);
+  // Find usersPrev not in usersCurrent
+  const lost = usersPrev.filter((user) => {
+    return !usersCurrent.some((userCurrent) => user.id === userCurrent.id);
   });
   console.log(
     `Lost ${lost.length} users`,
     lost.map((user) => user.username)
   );
 
-  // Find usersToday not in usersYesterday
-  const gained = usersToday.filter((user) => {
-    return !usersYesterday.some(
-      (userYesterday) => user.id === userYesterday.id
-    );
+  // Find usersCurrent not in usersPrev
+  const gained = usersCurrent.filter((user) => {
+    return !usersPrev.some((userPrev) => user.id === userPrev.id);
   });
   console.log(
     `Gained ${gained.length} users`,
@@ -154,7 +152,7 @@ async function compareUsers(type = "followers") {
 
 async function main() {
   console.log("Starting...");
-  await getDataForToday();
+  await getDataForCurrent();
   await compareUsers("followers");
   await compareUsers("following");
   console.log("Done!");
