@@ -17,34 +17,34 @@ async function getFollowers() {
   }
 
   /** @type import("twitter-api-v2").UserV2[] */
-  const followers = [];
+  const users = [];
   /** @type import("twitter-api-v2").UserV2TimelineResult */
-  let followersRes = {
+  let usersRes = {
     data: [],
     meta: { result_count: 100, next_token: "x" },
   };
 
-  while (followersRes.meta.next_token) {
-    console.log("Getting followers... " + followersRes.meta.next_token);
+  while (usersRes.meta.next_token) {
+    console.log("Getting users... " + usersRes.meta.next_token);
 
     // 5s timeout to avoid hitting rate limit
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    followersRes = await twitterClient.followers(
+    usersRes = await twitterClient.users(
       process.env.TWITTER_USER_ID,
-      followersRes.meta.next_token === "x"
+      usersRes.meta.next_token === "x"
         ? {}
-        : { pagination_token: followersRes.meta.next_token }
+        : { pagination_token: usersRes.meta.next_token }
     );
-    followersRes.data.forEach((user) => {
-      followers.push(user);
+    usersRes.data.forEach((user) => {
+      users.push(user);
     });
 
     // list total
-    console.log("Got " + followers.length + " followers");
+    console.log("Got " + users.length + " users");
   }
 
-  return followers;
+  return users;
 }
 
 async function getFollowing() {
@@ -92,60 +92,69 @@ async function getDataForToday() {
     JSON.stringify(following, null, 2)
   );
 
-  const followers = await getFollowers();
-  await writeFile(
-    `./cache/followers-${date}.json`,
-    JSON.stringify(followers, null, 2)
-  );
+  const users = await getFollowers();
+  await writeFile(`./cache/users-${date}.json`, JSON.stringify(users, null, 2));
 }
 
-async function compareFollowers() {
+async function compareUsers(type = "followers") {
   // get all file dates
   const fileNames = await readdir("./cache");
-  const followersFileNames = fileNames.filter((fileName) =>
-    fileName.includes("followers-")
+  const usersFileNames = fileNames.filter((fileName) =>
+    fileName.includes(`${type}-`)
   );
-  const followersFileDates = followersFileNames.map(
-    (fileName) => fileName.split("followers-")[1].split(".")[0]
+  const usersFileDates = usersFileNames.map(
+    (fileName) => fileName.split(`${type}-`)[1].split(".")[0]
   );
-  const followersFileDatesSorted = followersFileDates.sort(
+  const usersFileDatesSorted = usersFileDates.sort(
     (a, b) => new Date(a).getTime() - new Date(b).getTime()
   );
 
   // Get most recent file
   const mostRecentFileDate =
-    followersFileDatesSorted[followersFileDatesSorted.length - 1];
-  const mostRecentFile = `./cache/followers-${mostRecentFileDate}.json`;
+    usersFileDatesSorted[usersFileDatesSorted.length - 1];
+  const mostRecentFile = `./cache/${type}-${mostRecentFileDate}.json`;
   const mostRecentFileData = await readFile(mostRecentFile, "utf-8");
   /** @type import("twitter-api-v2").UserV2[] */
-  const followersToday = JSON.parse(mostRecentFileData);
+  const usersToday = JSON.parse(mostRecentFileData);
 
   // Get second most recent file
   const secondMostRecentFileDate =
-    followersFileDatesSorted[followersFileDatesSorted.length - 2];
-  const secondMostRecentFile = `./cache/followers-${secondMostRecentFileDate}.json`;
+    usersFileDatesSorted[usersFileDatesSorted.length - 2];
+  const secondMostRecentFile = `./cache/${type}-${secondMostRecentFileDate}.json`;
   const secondMostRecentFileData = await readFile(
     secondMostRecentFile,
     "utf-8"
   );
   /** @type import("twitter-api-v2").UserV2[] */
-  const followersYesterday = JSON.parse(secondMostRecentFileData);
+  const usersYesterday = JSON.parse(secondMostRecentFileData);
 
-  // Find who unfollowed
-  const unfollowed = followersToday.filter(
-    (follower) =>
-      !followersYesterday.some(
-        (followerYesterday) => follower.id === followerYesterday.id
-      )
+  // Find usersYesterday not in usersToday
+
+  const lost = usersYesterday.filter((user) => {
+    return !usersToday.some((userToday) => user.id === userToday.id);
+  });
+  console.log(
+    `Lost ${lost.length} users`,
+    lost.map((user) => user.username)
   );
 
-  console.log(unfollowed);
+  // Find usersToday not in usersYesterday
+  const gained = usersToday.filter((user) => {
+    return !usersYesterday.some(
+      (userYesterday) => user.id === userYesterday.id
+    );
+  });
+  console.log(
+    `Gained ${gained.length} users`,
+    gained.map((user) => user.username)
+  );
 }
 
 async function main() {
   console.log("Starting...");
-  await getDataForToday();
-  await compareFollowers();
+  // await getDataForToday();
+  // await compareUsers('followers');
+  await compareUsers("following");
   console.log("Done!");
 }
 
