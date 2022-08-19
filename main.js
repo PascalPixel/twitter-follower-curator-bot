@@ -154,8 +154,8 @@ async function compareUsers(type = "followers") {
 
 async function main() {
   console.log("Starting...");
-  // await getDataForToday();
-  // await compareUsers('followers');
+  await getDataForToday();
+  await compareUsers("followers");
   await compareUsers("following");
   console.log("Done!");
 }
