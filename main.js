@@ -33,8 +33,11 @@ async function getFollowers() {
     followersRes = await twitterClient.followers(
       process.env.TWITTER_USER_ID,
       followersRes.meta.next_token === "x"
-        ? {}
-        : { pagination_token: followersRes.meta.next_token }
+        ? { "user.fields": "public_metrics" }
+        : {
+            "user.fields": "public_metrics",
+            pagination_token: followersRes.meta.next_token,
+          }
     );
     followersRes.data.forEach((user) => {
       followers.push(user);
@@ -69,8 +72,11 @@ async function getFollowing() {
     followingRes = await twitterClient.following(
       process.env.TWITTER_USER_ID,
       followingRes.meta.next_token === "x"
-        ? {}
-        : { pagination_token: followingRes.meta.next_token }
+        ? { "user.fields": "public_metrics" }
+        : {
+            "user.fields": "public_metrics",
+            pagination_token: followingRes.meta.next_token,
+          }
     );
     followingRes.data.forEach((user) => {
       following.push(user);
