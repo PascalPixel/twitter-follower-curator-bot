@@ -40,7 +40,9 @@ async function compareUsers(type = "followers") {
     return !usersCurrent.some((userCurrent) => user.id === userCurrent.id);
   });
   console.log(
-    `Lost ${lost.length} users`,
+    `${type === "followers" ? "Lost" : "Unfollowed"} ${lost.length} ${
+      type === "followers" ? "followers" : "users"
+    }.`,
     lost.map((user) => user.username)
   );
 
@@ -49,7 +51,9 @@ async function compareUsers(type = "followers") {
     return !usersPrev.some((userPrev) => user.id === userPrev.id);
   });
   console.log(
-    `Gained ${gained.length} users`,
+    `${type === "followers" ? "Gained" : "Followed"} ${gained.length} ${
+      type === "followers" ? "followers" : "new users"
+    }.`,
     gained.map((user) => user.username)
   );
 }
