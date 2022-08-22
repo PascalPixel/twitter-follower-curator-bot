@@ -1,6 +1,7 @@
 {
   "type": "module",
   "scripts": {
+    "start": "node main.js",
     "update": "node update.js",
     "report": "node report.js",
     "side": "node side.js"
