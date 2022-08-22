@@ -32,15 +32,13 @@ export default async function cacheTwitterUsers(type = "followers") {
   while (usersRes.meta.next_token) {
     console.log(`Getting ${type}... ` + usersRes.meta.next_token);
 
-    // 1 call per minute to avoid hitting rate limit
-    await new Promise((resolve) => setTimeout(resolve, 1000 * 60));
-
     usersRes = await twitterClient[type](
       process.env.TWITTER_USER_ID,
       usersRes.meta.next_token === "x"
-        ? { "user.fields": "public_metrics" }
+        ? { "user.fields": "public_metrics", max_results: 1000 }
         : {
             "user.fields": "public_metrics",
+            max_results: 1000,
             pagination_token: usersRes.meta.next_token,
           }
     );
@@ -50,6 +48,9 @@ export default async function cacheTwitterUsers(type = "followers") {
 
     // list total
     console.log("Got " + users.length + " followers");
+
+    // 1 call per minute to avoid hitting rate limit
+    await new Promise((resolve) => setTimeout(resolve, 1000 * 60));
   }
 
   await writeFile(
