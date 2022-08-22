@@ -47,7 +47,7 @@ export default async function cacheTwitterUsers(type = "followers") {
     });
 
     // list total
-    console.log("Got " + users.length + " followers");
+    console.log("Got " + users.length + " " + type + ".");
 
     // 1 call per minute to avoid hitting rate limit
     await new Promise((resolve) => setTimeout(resolve, 1000 * 60));
