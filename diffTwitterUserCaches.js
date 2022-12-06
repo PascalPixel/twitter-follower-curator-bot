@@ -43,7 +43,7 @@ export default async function diffTwitterUserCaches(type = "followers") {
     `${type === "followers" ? "Lost" : "Unfollowed"} ${lost.length} ${
       type === "followers" ? "followers" : "users"
     }.`,
-    lost.map((user) => user.username)
+    lost.map((user) => `https://twitter.com/${user.username}`)
   );
 
   // Find usersCurrent not in usersPrev
@@ -55,6 +55,6 @@ export default async function diffTwitterUserCaches(type = "followers") {
     `${type === "followers" ? "Gained" : "Followed"} ${gained.length} ${
       type === "followers" ? "followers" : "new users"
     }.`,
-    gained.map((user) => user.username)
+    gained.map((user) => `https://twitter.com/${user.username}`)
   );
 }
