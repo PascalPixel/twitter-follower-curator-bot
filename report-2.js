@@ -52,32 +52,27 @@ export async function report2Following() {
   const followers = await getFollowers();
   const following = await getFollowing();
 
-  const usersMinusKeepListMinusFollowingMe = following.filter(
+  const usersNoMutual = following.filter(
     (user) => !followers.some((follower) => follower.username === user.username)
   );
 
-  const usersMinusKeepListMinusFollowingMeWithMetrics =
-    usersMinusKeepListMinusFollowingMe.map((user) => [
-      user.public_metrics?.following_count,
-      user.public_metrics?.followers_count,
-      Math.round(
-        parseInt(`${user.public_metrics?.followers_count}`) /
-          parseInt(`${user.public_metrics?.following_count}`)
-      ),
-      `https://twitter.com/${user.username}`,
-    ]);
+  const usersNoMutualData = usersNoMutual.map((user) => [
+    user.public_metrics?.following_count,
+    user.public_metrics?.followers_count,
+    Math.round(
+      parseInt(`${user.public_metrics?.followers_count || 0}`) /
+        parseInt(`${user.public_metrics?.following_count || 0}`)
+    ),
+    `https://twitter.com/${user.username}`,
+  ]);
 
-  const usersMinusKeepListMinusFollowingMeWithMetricsSorted =
-    usersMinusKeepListMinusFollowingMeWithMetrics.sort(
-      (a, b) => parseInt(`${b[2]}`) - parseInt(`${a[2]}`)
-    );
+  const sortedUsersNoMutualData = usersNoMutualData
+    .sort((a, b) => b[1] - a[1])
+    .sort((a, b) => b[2] - a[2]);
 
   await writeFile(
     `./cache/top-following-${new Date().toISOString().substring(0, 10)}.json`,
-    JSON.stringify(usersMinusKeepListMinusFollowingMeWithMetricsSorted).replace(
-      /\],/g,
-      "],\n"
-    )
+    JSON.stringify(sortedUsersNoMutualData).replace(/\],/g, "],\n")
   );
 
   console.log("Done!");
@@ -87,23 +82,23 @@ export async function report2Following() {
 export async function report2Followers() {
   console.log("Starting...");
 
-  const users = await getFollowers();
+  const followers = await getFollowers();
 
-  const topUsers = users.map((user) => [
+  const followersData = followers.map((user) => [
     user.public_metrics?.following_count,
     user.public_metrics?.followers_count,
     Math.round(
-      parseInt(`${user.public_metrics?.followers_count}`) /
-        parseInt(`${user.public_metrics?.following_count}`)
+      parseInt(`${user.public_metrics?.followers_count || 0}`) /
+        parseInt(`${user.public_metrics?.following_count || 0}`)
     ),
     `https://twitter.com/${user.username}`,
   ]);
 
-  const filteredUsers = topUsers.filter((user) => (user[1] || 0) > 0);
+  const filteredUsers = followersData.filter((user) => (user[1] || 0) > 0);
 
-  const sortedUsers = filteredUsers.sort(
-    (a, b) => parseInt(`${b[2]}`) - parseInt(`${a[2]}`)
-  );
+  const sortedUsers = filteredUsers
+    .sort((a, b) => b[1] - a[1])
+    .sort((a, b) => b[2] - a[2]);
 
   await writeFile(
     `./cache/top-followers-${new Date().toISOString().substring(0, 10)}.json`,
