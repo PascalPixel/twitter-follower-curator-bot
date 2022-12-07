@@ -1,5 +1,4 @@
 import { readdir, readFile, writeFile } from "fs/promises";
-import allowlist from "./allowlist.js";
 
 async function getFollowers() {
   const fileNames = await readdir("./cache");
@@ -53,11 +52,7 @@ export async function report2Following() {
   const followers = await getFollowers();
   const following = await getFollowing();
 
-  const usersMinusKeepList = following.filter(
-    (user) => !allowlist.includes(user.username)
-  );
-
-  const usersMinusKeepListMinusFollowingMe = usersMinusKeepList.filter(
+  const usersMinusKeepListMinusFollowingMe = following.filter(
     (user) => !followers.some((follower) => follower.username === user.username)
   );
 
@@ -66,14 +61,16 @@ export async function report2Following() {
       user.public_metrics?.following_count,
       user.public_metrics?.followers_count,
       Math.round(
-        user.public_metrics?.followers_count /
-          user.public_metrics?.following_count
+        parseInt(`${user.public_metrics?.followers_count}`) /
+          parseInt(`${user.public_metrics?.following_count}`)
       ),
       `https://twitter.com/${user.username}`,
     ]);
 
   const usersMinusKeepListMinusFollowingMeWithMetricsSorted =
-    usersMinusKeepListMinusFollowingMeWithMetrics.sort((a, b) => b[2] - a[2]);
+    usersMinusKeepListMinusFollowingMeWithMetrics.sort(
+      (a, b) => parseInt(`${b[2]}`) - parseInt(`${a[2]}`)
+    );
 
   await writeFile(
     `./cache/top-following-${new Date().toISOString().substring(0, 10)}.json`,
@@ -96,15 +93,17 @@ export async function report2Followers() {
     user.public_metrics?.following_count,
     user.public_metrics?.followers_count,
     Math.round(
-      user.public_metrics?.followers_count /
-        user.public_metrics?.following_count
+      parseInt(`${user.public_metrics?.followers_count}`) /
+        parseInt(`${user.public_metrics?.following_count}`)
     ),
     `https://twitter.com/${user.username}`,
   ]);
 
-  const filteredUsers = topUsers.filter((user) => user[1] > 0);
+  const filteredUsers = topUsers.filter((user) => (user[1] || 0) > 0);
 
-  const sortedUsers = filteredUsers.sort((a, b) => b[2] - a[2]);
+  const sortedUsers = filteredUsers.sort(
+    (a, b) => parseInt(`${b[2]}`) - parseInt(`${a[2]}`)
+  );
 
   await writeFile(
     `./cache/top-followers-${new Date().toISOString().substring(0, 10)}.json`,
