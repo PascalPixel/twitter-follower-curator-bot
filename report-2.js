@@ -52,6 +52,7 @@ export async function report2Following() {
   const followers = await getFollowers();
   const following = await getFollowing();
 
+  // Filter out users that follow me back
   const usersNoMutual = following.filter(
     (user) => !followers.some((follower) => follower.username === user.username)
   );
