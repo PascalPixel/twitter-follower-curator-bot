@@ -1,8 +1,5 @@
+cache/**/*
+node_modules/
 .DS_Store
-/.env
-/cache/**/*
-/followers.json
-/following.json
-/node_modules/
-/allowlist.js
-/side.js
+.env
+allowlist.js
