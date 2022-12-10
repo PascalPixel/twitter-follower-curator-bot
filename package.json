@@ -1,14 +1,15 @@
 {
   "type": "module",
   "scripts": {
-    "getFollowers": "node getFollowers.js"
+    "start": "node main.js",
+    "update": "node update.js",
+    "report": "node report.js",
+    "report-2": "node report-2.js",
+    "side": "node side.js"
   },
   "dependencies": {
-    "dotenv": "^16.0.0",
-    "node-fetch": "^3.2.3",
-    "twitter": "^1.7.1"
-  },
-  "prettier": {
-    "printWidth": 130
+    "dotenv": "^16.0.3",
+    "node-fetch": "^3.3.0",
+    "twitter-api-v2": "^1.12.9"
   }
 }

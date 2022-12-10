@@ -1,3 +1,8 @@
-node_modules/
-.env
-followers.json
+.DS_Store
+/.env
+/cache/**/*
+/followers.json
+/following.json
+/node_modules/
+/allowlist.js
+/side.js

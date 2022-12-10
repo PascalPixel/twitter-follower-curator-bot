@@ -1,44 +1,20 @@
-import { config } from "dotenv";
-import fetch from "node-fetch";
-import { writeFile } from "fs/promises";
-
-config();
+import diffTwitterUserCaches from "./diffTwitterUserCaches.js";
+import cacheTwitterUsers from "./cacheTwitterUsers.js";
+import { report2Following, report2Followers } from "./report-2.js";
 
 async function main() {
-  const followers = [];
-  let max_results = 1000;
+  console.log("Starting...");
 
-  async function getFollowers(next_token) {
-    // timeout not to hammer the API
-    if (next_token) await new Promise((resolve) => setTimeout(resolve, 5000));
+  await cacheTwitterUsers("followers");
+  await cacheTwitterUsers("following");
 
-    try {
-      const id = process.env.TWITTER_USER_ID;
-      const url = new URL(`https://api.twitter.com/2/users/${id}/followers`);
-      url.search = new URLSearchParams(next_token ? { max_results, pagination_token: next_token } : { max_results });
+  await diffTwitterUserCaches("followers");
+  await diffTwitterUserCaches("following");
 
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
-        },
-      });
-      const json = await response.json();
-      if (!json.data) throw json;
+  await report2Following();
+  await report2Followers();
 
-      followers.push(...json.data);
-
-      if (json.meta.next_token) return await getFollowers(json.meta.next_token);
-      return console.log("done getting followers");
-    } catch (err) {
-      return console.log(err);
-    }
-  }
-
-  await getFollowers();
-
-  if (followers.length) writeFile("./followers.json", JSON.stringify(followers), (err) => console.error(err));
-
-  return console.log("done");
+  console.log("Done!");
 }
 
 main();
