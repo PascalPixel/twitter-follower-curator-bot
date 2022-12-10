@@ -1,15 +1,5 @@
-import { config as loadEnvVariables } from "dotenv";
 import { writeFile } from "fs/promises";
-import { TwitterApi } from "twitter-api-v2";
-
-loadEnvVariables();
-
-if (!process.env.TWITTER_BEARER_TOKEN) {
-  throw new Error("TWITTER_BEARER_TOKEN is not set");
-}
-
-const twitterClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN).v2
-  .readOnly;
+import twitterClient from "../lib/twitterClient.js";
 
 /** @type {(type: 'followers'|'following') => Promise<void>} */
 export default async function cacheTwitterUsers(type = "followers") {
@@ -32,7 +22,7 @@ export default async function cacheTwitterUsers(type = "followers") {
   while (usersRes.meta.next_token) {
     console.log(`Getting ${type}... ` + usersRes.meta.next_token);
 
-    usersRes = await twitterClient[type](
+    usersRes = await twitterClient.bearer[type](
       process.env.TWITTER_USER_ID,
       usersRes.meta.next_token === "x"
         ? { "user.fields": "public_metrics", max_results: 1000 }

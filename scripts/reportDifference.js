@@ -1,6 +1,6 @@
-import diffTwitterUserCaches from "./diffTwitterUserCaches.js";
+import diffTwitterUserCaches from "../utils/diffTwitterUserCaches.js";
 
-async function main() {
+async function difference() {
   console.log("Starting...");
 
   await diffTwitterUserCaches("followers");
@@ -9,4 +9,4 @@ async function main() {
   console.log("Done!");
 }
 
-main();
+difference();

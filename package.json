@@ -1,11 +1,11 @@
 {
   "type": "module",
   "scripts": {
-    "start": "node main.js",
-    "update": "node update.js",
-    "report": "node report.js",
-    "report-2": "node report-2.js",
-    "side": "node side.js"
+    "start": "node ./scripts/main.js",
+    "updateCache": "node ./scripts/updateCache.js",
+    "reportDifference": "node ./scripts/reportDifference.js",
+    "report": "node ./scripts/report.js",
+    "unfollow": "node ./scripts/unfollow.js"
   },
   "dependencies": {
     "dotenv": "^16.0.3",

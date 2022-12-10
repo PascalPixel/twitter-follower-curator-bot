@@ -1,6 +1,6 @@
-import cacheTwitterUsers from "./cacheTwitterUsers.js";
+import cacheTwitterUsers from "../utils/cacheTwitterUsers.js";
 
-async function main() {
+async function update() {
   console.log("Starting...");
 
   await cacheTwitterUsers("followers");
@@ -9,4 +9,4 @@ async function main() {
   console.log("Done!");
 }
 
-main();
+update();

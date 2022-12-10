@@ -1,6 +1,7 @@
-import diffTwitterUserCaches from "./diffTwitterUserCaches.js";
-import cacheTwitterUsers from "./cacheTwitterUsers.js";
-import { report2Following, report2Followers } from "./report-2.js";
+import diffTwitterUserCaches from "../utils/diffTwitterUserCaches.js";
+import cacheTwitterUsers from "../utils/cacheTwitterUsers.js";
+import report2Followers from "../utils/report2Followers.js";
+import report2Following from "../utils/report2Following.js";
 
 async function main() {
   console.log("Starting...");
