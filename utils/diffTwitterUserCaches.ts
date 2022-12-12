@@ -7,7 +7,7 @@ export default async function diffTwitterUserCaches(
   console.log(`Starting diffTwitterUserCaches("${type}")...`);
 
   // get all file dates
-  const fileNames = await readdir("./cache");
+  const fileNames = await readdir(`${process.cwd()}/cache`);
   const usersFileNames = fileNames.filter((fileName) =>
     fileName.includes(`${type}-`)
   );
@@ -21,14 +21,14 @@ export default async function diffTwitterUserCaches(
   // Get most recent file
   const mostRecentFileDate =
     usersFileDatesSorted[usersFileDatesSorted.length - 1];
-  const mostRecentFile = `./cache/${type}-${mostRecentFileDate}on`;
+  const mostRecentFile = `${process.cwd()}/cache/${type}-${mostRecentFileDate}.json`;
   const mostRecentFileData = await readFile(mostRecentFile, "utf-8");
   const usersCurrent: UserV2[] = JSON.parse(mostRecentFileData);
 
   // Get second most recent file
   const secondMostRecentFileDate =
     usersFileDatesSorted[usersFileDatesSorted.length - 2];
-  const secondMostRecentFile = `./cache/${type}-${secondMostRecentFileDate}on`;
+  const secondMostRecentFile = `${process.cwd()}/cache/${type}-${secondMostRecentFileDate}.json`;
   const secondMostRecentFileData = await readFile(
     secondMostRecentFile,
     "utf-8"

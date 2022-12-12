@@ -43,7 +43,10 @@ export default async function cacheTwitterUsers(
     await new Promise((resolve) => setTimeout(resolve, 1000 * 60));
   }
 
-  await writeFile(`./cache/${type}-${date}on`, JSON.stringify(users, null, 2));
+  await writeFile(
+    `${process.cwd()}/cache/${type}-${date}.json`,
+    JSON.stringify(users, null, 2)
+  );
 
   return console.log(`Done cacheTwitterUsers("${type}")!`);
 }

@@ -2,7 +2,7 @@ import { readdir, readFile } from "fs/promises";
 import { UserV2 } from "twitter-api-v2";
 
 export async function getFollowing() {
-  const fileNames = await readdir("./cache");
+  const fileNames = await readdir(`${process.cwd()}/cache`);
   // find file with latest date
   const followingFileNames = fileNames.filter((fileName) =>
     fileName.includes("following-")
@@ -15,7 +15,7 @@ export async function getFollowing() {
   );
   const mostRecentFileDate =
     followingFileDatesSorted[followingFileDatesSorted.length - 1];
-  const mostRecentFile = `./cache/following-${mostRecentFileDate}on`;
+  const mostRecentFile = `${process.cwd()}/cache/following-${mostRecentFileDate}.json`;
   const mostRecentFileData = await readFile(mostRecentFile, "utf-8");
 
   const users: UserV2[] = JSON.parse(mostRecentFileData);

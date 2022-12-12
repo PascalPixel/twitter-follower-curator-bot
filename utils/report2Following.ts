@@ -23,7 +23,9 @@ export default async function report2Following() {
     .sort((a, b) => b[2] - a[2]);
 
   await writeFile(
-    `./cache/top-following-${new Date().toISOString().substring(0, 10)}on`,
+    `${process.cwd()}/cache/top-following-${new Date()
+      .toISOString()
+      .substring(0, 10)}.json`,
     JSON.stringify(sortedDataFollowing).replace(/\],/g, "],\n")
   );
 

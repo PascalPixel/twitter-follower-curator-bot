@@ -3,7 +3,7 @@ import allowlist from "../allowlist.json";
 import twitterClient from "../lib/twitterClient";
 
 export default async function unfollowUsers(type = "top-following") {
-  const fileNames = await readdir("./cache");
+  const fileNames = await readdir(`${process.cwd()}/cache`);
   const usersFileNames = fileNames.filter((fileName) =>
     fileName.includes(`${type}-`)
   );
@@ -17,7 +17,7 @@ export default async function unfollowUsers(type = "top-following") {
   // Get most recent file
   const mostRecentFileDate =
     usersFileDatesSorted[usersFileDatesSorted.length - 1];
-  const mostRecentFile = `./cache/${type}-${mostRecentFileDate}on`;
+  const mostRecentFile = `${process.cwd()}/cache/${type}-${mostRecentFileDate}.json`;
   const mostRecentFileData = await readFile(mostRecentFile, "utf-8");
 
   const mostRecentFileDataParsed: [number, number, number, string][] =

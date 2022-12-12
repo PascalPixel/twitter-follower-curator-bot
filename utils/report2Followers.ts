@@ -24,7 +24,9 @@ export default async function report2Followers() {
     .sort((a, b) => b[2] - a[2]);
 
   await writeFile(
-    `./cache/top-followers-${new Date().toISOString().substring(0, 10)}on`,
+    `${process.cwd()}/cache/top-followers-${new Date()
+      .toISOString()
+      .substring(0, 10)}.json`,
     JSON.stringify(sortedFilteredDataFollowers).replace(/\],/g, "],\n")
   );
 
