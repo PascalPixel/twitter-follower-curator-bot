@@ -1,6 +1,6 @@
 import twitterClient from "../lib/twitterClient";
 
-export default async function findFans() {
+export default async function findSupporters() {
   if (!process.env.TWITTER_USER_ID) {
     throw new Error("TWITTER_USER_ID is not set");
   }

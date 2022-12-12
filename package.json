@@ -5,7 +5,7 @@
     "reportDifference": "ts-node ./scripts/reportDifference.ts",
     "report": "ts-node ./scripts/report.ts",
     "unfollow": "ts-node ./scripts/unfollow.ts",
-    "fans": "ts-node ./scripts/fans.ts"
+    "supporters": "ts-node ./scripts/supporters.ts"
   },
   "dependencies": {
     "@types/node": "^18.11.13",

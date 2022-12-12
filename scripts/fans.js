@@ -1,7 +1,7 @@
-import findFans from "../utils/findFans";
+import findSupporters from "../utils/findSupporters";
 
-async function fans() {
-  await findFans();
+async function supporters() {
+  await findSupporters();
 }
 
-fans();
+supporters();
