@@ -58,7 +58,8 @@ export default async function findSupporters() {
 
   // Loop through each tweet and get the liking users
   await Promise.all(
-    tweets.map(async (tweet) => {
+    // FIXME; only picking one now
+    [tweets[0]].map(async (tweet) => {
       try {
         await getLikingUsers(tweet);
       } catch (error) {
