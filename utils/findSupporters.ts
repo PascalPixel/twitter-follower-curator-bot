@@ -55,11 +55,22 @@ export default async function findSupporters() {
       const error = err as TwitterApiError;
       // Check if the error is a rate limit error
       if (error.code === 429) {
-        // If the error is a rate limit error, wait for the rate limit to reset before retrying
-        console.log("Rate limit reached. Waiting for reset...");
-        await waitForRateLimitReset(
-          error.rateLimit?.reset || Math.floor(Date.now() / 1000) + 900
+        // wait until rate limit resets
+        const rateLimit = error.rateLimit || { reset: 0 };
+        const resetTime = rateLimit.reset * 1000;
+        const now = new Date().getTime();
+        const waitTime = resetTime - now;
+
+        // print minutes and seconds waiting
+        console.log(
+          `Waiting ${Math.floor(waitTime / 1000 / 60)}m ${
+            Math.floor(waitTime / 1000) % 60
+          }s`
         );
+
+        // wait
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+
         // Retry the request
         await getLikingUsers(tweet);
       } else {
