@@ -1,5 +1,5 @@
-import report2Followers from "../utils/report2Followers.js";
-import report2Following from "../utils/report2Following.js";
+import report2Followers from "../utils/report2Followers";
+import report2Following from "../utils/report2Following";
 
 async function report() {
   console.log("Starting...");

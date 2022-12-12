@@ -1,8 +1,10 @@
 import { writeFile } from "fs/promises";
-import twitterClient from "../lib/twitterClient.js";
+import { UserV2, UserV2TimelineResult } from "twitter-api-v2";
+import twitterClient from "../lib/twitterClient";
 
-/** @type {(type: 'followers'|'following') => Promise<void>} */
-export default async function cacheTwitterUsers(type = "followers") {
+export default async function cacheTwitterUsers(
+  type: "followers" | "following" = "followers"
+): Promise<void> {
   console.log(`Starting cacheTwitterUsers("${type}")...`);
 
   if (!process.env.TWITTER_USER_ID) {
@@ -11,10 +13,8 @@ export default async function cacheTwitterUsers(type = "followers") {
 
   const date = new Date().toISOString().split("T")[0];
 
-  /** @type {import("twitter-api-v2").UserV2[]} */
-  const users = [];
-  /** @type {import("twitter-api-v2").UserV2TimelineResult} */
-  let usersRes = {
+  const users: UserV2[] = [];
+  let usersRes: UserV2TimelineResult = {
     data: [],
     meta: { result_count: 100, next_token: "x" },
   };
@@ -43,10 +43,7 @@ export default async function cacheTwitterUsers(type = "followers") {
     await new Promise((resolve) => setTimeout(resolve, 1000 * 60));
   }
 
-  await writeFile(
-    `./cache/${type}-${date}.json`,
-    JSON.stringify(users, null, 2)
-  );
+  await writeFile(`./cache/${type}-${date}on`, JSON.stringify(users, null, 2));
 
   return console.log(`Done cacheTwitterUsers("${type}")!`);
 }

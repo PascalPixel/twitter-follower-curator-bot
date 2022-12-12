@@ -1,4 +1,5 @@
 import { readdir, readFile } from "fs/promises";
+import { UserV2 } from "twitter-api-v2";
 
 export async function getFollowers() {
   const fileNames = await readdir("./cache");
@@ -14,11 +15,10 @@ export async function getFollowers() {
   );
   const mostRecentFileDate =
     followersFileDatesSorted[followersFileDatesSorted.length - 1];
-  const mostRecentFile = `./cache/followers-${mostRecentFileDate}.json`;
+  const mostRecentFile = `./cache/followers-${mostRecentFileDate}on`;
   const mostRecentFileData = await readFile(mostRecentFile, "utf-8");
 
-  /** @type import("twitter-api-v2").UserV2[] */
-  const users = JSON.parse(mostRecentFileData);
+  const users: UserV2[] = JSON.parse(mostRecentFileData);
 
   return users;
 }

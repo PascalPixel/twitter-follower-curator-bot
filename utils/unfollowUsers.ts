@@ -1,6 +1,6 @@
 import { readFile, readdir } from "fs/promises";
-import allowlist from "../allowlist.js";
-import twitterClient from "../lib/twitterClient.js";
+import allowlist from "../allowlist.json";
+import twitterClient from "../lib/twitterClient";
 
 export default async function unfollowUsers(type = "top-following") {
   const fileNames = await readdir("./cache");
@@ -17,11 +17,11 @@ export default async function unfollowUsers(type = "top-following") {
   // Get most recent file
   const mostRecentFileDate =
     usersFileDatesSorted[usersFileDatesSorted.length - 1];
-  const mostRecentFile = `./cache/${type}-${mostRecentFileDate}.json`;
+  const mostRecentFile = `./cache/${type}-${mostRecentFileDate}on`;
   const mostRecentFileData = await readFile(mostRecentFile, "utf-8");
 
-  /** @type {[number,number,number,string][]} */
-  const mostRecentFileDataParsed = JSON.parse(mostRecentFileData);
+  const mostRecentFileDataParsed: [number, number, number, string][] =
+    JSON.parse(mostRecentFileData);
 
   // reverse order
   const mostRecentFileDataParsedReversed = [

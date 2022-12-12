@@ -1,4 +1,4 @@
-import diffTwitterUserCaches from "../utils/diffTwitterUserCaches.js";
+import diffTwitterUserCaches from "../utils/diffTwitterUserCaches";
 
 async function difference() {
   console.log("Starting...");
