@@ -1,8 +1,14 @@
 import { readFile, readdir } from "fs/promises";
-import allowlist from "../allowlist.json";
 import twitterClient from "../lib/twitterClient";
 
 export default async function unfollowUsers(type = "top-following") {
+  // import allowlist
+  const allowlistRaw = await readFile(
+    `${process.cwd()}/allowlist.json`,
+    "utf-8"
+  );
+  const allowlist: string[] = JSON.parse(allowlistRaw);
+
   const fileNames = await readdir(`${process.cwd()}/cache`);
   const usersFileNames = fileNames.filter((fileName) =>
     fileName.includes(`${type}-`)
@@ -59,7 +65,7 @@ export default async function unfollowUsers(type = "top-following") {
         );
         console.log(`Unfollowed ${id}`);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.log(`Error unfollowing ${id}`, e);
       // if rateLimit
       if (e.message.includes("429")) {
