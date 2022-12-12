@@ -1,4 +1,4 @@
-import unfollowUsers from "../utils/unfollowUsers.js";
+import unfollowUsers from "../utils/unfollowUsers";
 
 async function unfollow() {
   console.log("Starting...");

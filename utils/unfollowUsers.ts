@@ -1,10 +1,16 @@
 import { readFile, readdir } from "fs/promises";
-import allowlist from "../allowlist.js";
-import twitterClient from "../lib/twitterClient.js";
-import { getFollowers } from "./getFollowers.js";
+import twitterClient from "../lib/twitterClient";
+import { getFollowers } from "./getFollowers";
 
 export default async function unfollowUsers(type = "top-following") {
-  const fileNames = await readdir("./cache");
+  // import allowlist
+  const allowlistRaw = await readFile(
+    `${process.cwd()}/allowlist.json`,
+    "utf-8"
+  );
+  const allowlist: string[] = JSON.parse(allowlistRaw);
+
+  const fileNames = await readdir(`${process.cwd()}/cache`);
   const usersFileNames = fileNames.filter((fileName) =>
     fileName.includes(`${type}-`)
   );
@@ -18,11 +24,11 @@ export default async function unfollowUsers(type = "top-following") {
   // Get most recent file
   const mostRecentFileDate =
     usersFileDatesSorted[usersFileDatesSorted.length - 1];
-  const mostRecentFile = `./cache/${type}-${mostRecentFileDate}.json`;
+  const mostRecentFile = `${process.cwd()}/cache/${type}-${mostRecentFileDate}.json`;
   const mostRecentFileData = await readFile(mostRecentFile, "utf-8");
 
-  /** @type {[number,number,number,string][]} */
-  const users = JSON.parse(mostRecentFileData);
+  const users: [number, number, number, string][] =
+    JSON.parse(mostRecentFileData);
 
   // sort by followers, ascending
   const sortedUsers = users.sort(
@@ -65,7 +71,7 @@ export default async function unfollowUsers(type = "top-following") {
         );
         console.log(`Unfollowed ${id}`);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.log(`Error unfollowing ${id}`, e);
       // if rateLimit
       if (e.message.includes("429")) {

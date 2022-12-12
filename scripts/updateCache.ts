@@ -1,4 +1,4 @@
-import cacheTwitterUsers from "../utils/cacheTwitterUsers.js";
+import cacheTwitterUsers from "../utils/cacheTwitterUsers";
 
 async function update() {
   console.log("Starting...");

@@ -1,11 +1,13 @@
 import { readdir, readFile } from "fs/promises";
+import { UserV2 } from "twitter-api-v2";
 
-/** @type {(type: 'followers'|'following') => Promise<void>} */
-export default async function diffTwitterUserCaches(type = "followers") {
+export default async function diffTwitterUserCaches(
+  type: "followers" | "following" = "followers"
+): Promise<void> {
   console.log(`Starting diffTwitterUserCaches("${type}")...`);
 
   // get all file dates
-  const fileNames = await readdir("./cache");
+  const fileNames = await readdir(`${process.cwd()}/cache`);
   const usersFileNames = fileNames.filter((fileName) =>
     fileName.includes(`${type}-`)
   );
@@ -19,42 +21,46 @@ export default async function diffTwitterUserCaches(type = "followers") {
   // Get most recent file
   const mostRecentFileDate =
     usersFileDatesSorted[usersFileDatesSorted.length - 1];
-  const mostRecentFile = `./cache/${type}-${mostRecentFileDate}.json`;
+  const mostRecentFile = `${process.cwd()}/cache/${type}-${mostRecentFileDate}.json`;
   const mostRecentFileData = await readFile(mostRecentFile, "utf-8");
-  /** @type {import("twitter-api-v2").UserV2[]} */
-  const usersCurrent = JSON.parse(mostRecentFileData);
+  const usersCurrent: UserV2[] = JSON.parse(mostRecentFileData);
 
   // Get second most recent file
   const secondMostRecentFileDate =
     usersFileDatesSorted[usersFileDatesSorted.length - 2];
-  const secondMostRecentFile = `./cache/${type}-${secondMostRecentFileDate}.json`;
+  const secondMostRecentFile = `${process.cwd()}/cache/${type}-${secondMostRecentFileDate}.json`;
   const secondMostRecentFileData = await readFile(
     secondMostRecentFile,
     "utf-8"
   );
-  /** @type {import("twitter-api-v2").UserV2[]} */
-  const usersPrev = JSON.parse(secondMostRecentFileData);
+  const usersPrev: UserV2[] = JSON.parse(secondMostRecentFileData);
 
   // Find usersPrev not in usersCurrent
-  const lost = usersPrev.filter((user) => {
-    return !usersCurrent.some((userCurrent) => user.id === userCurrent.id);
+  const lost = usersPrev.filter((user: { id: any }) => {
+    return !usersCurrent.some(
+      (userCurrent: { id: any }) => user.id === userCurrent.id
+    );
   });
   console.log(
     `${type === "followers" ? "Lost" : "Unfollowed"} ${lost.length} ${
       type === "followers" ? "followers" : "users"
     }.`,
-    lost.map((user) => `https://twitter.com/${user.username}`)
+    lost.map(
+      (user: { username: any }) => `https://twitter.com/${user.username}`
+    )
   );
 
   // Find usersCurrent not in usersPrev
-  const gained = usersCurrent.filter((user) => {
-    return !usersPrev.some((userPrev) => user.id === userPrev.id);
+  const gained = usersCurrent.filter((user: { id: any }) => {
+    return !usersPrev.some((userPrev: { id: any }) => user.id === userPrev.id);
   });
 
   return console.log(
     `${type === "followers" ? "Gained" : "Followed"} ${gained.length} ${
       type === "followers" ? "followers" : "new users"
     }.`,
-    gained.map((user) => `https://twitter.com/${user.username}`)
+    gained.map(
+      (user: { username: any }) => `https://twitter.com/${user.username}`
+    )
   );
 }

@@ -1,16 +1,18 @@
 {
-  "type": "module",
   "scripts": {
-    "start": "node ./scripts/main.js",
-    "updateCache": "node ./scripts/updateCache.js",
-    "reportDifference": "node ./scripts/reportDifference.js",
-    "report": "node ./scripts/report.js",
-    "unfollow": "node ./scripts/unfollow.js",
-    "fans": "node ./scripts/fans.js"
+    "start": "ts-node ./scripts/main.ts",
+    "updateCache": "ts-node ./scripts/updateCache.ts",
+    "reportDifference": "ts-node ./scripts/reportDifference.ts",
+    "report": "ts-node ./scripts/report.ts",
+    "unfollow": "ts-node ./scripts/unfollow.ts",
+    "fans": "ts-node ./scripts/fans.ts"
   },
   "dependencies": {
+    "@types/node": "^18.11.13",
     "dotenv": "^16.0.3",
     "node-fetch": "^3.3.0",
-    "twitter-api-v2": "^1.12.9"
+    "ts-node": "^10.9.1",
+    "twitter-api-v2": "^1.12.9",
+    "typescript": "^4.9.4"
   }
 }
