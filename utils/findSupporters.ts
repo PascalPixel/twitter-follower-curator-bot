@@ -10,17 +10,15 @@ export default async function findSupporters() {
   const response = await twitterClient.bearer.userTimeline(
     process.env.TWITTER_USER_ID,
     {
-      max_results: 5,
+      max_results: 100,
+      exclude: ["retweets", "replies"],
     }
   );
 
   const tweets = response.data.data;
 
-  // log tweets
-  console.log(tweets);
-
   // GET /2/tweets/:id/liking_users
-  const likesByUser = {}; // Initialize an object to store the number of likes by each user
+  const likesByUser: { username: string; count: number }[] = [];
 
   // Create a function to wait until the rate limit resets
   const waitForRateLimitReset = (resetTime: number) => {
@@ -32,49 +30,50 @@ export default async function findSupporters() {
 
   // Create a function to get the liking users for each tweet and update the likesByUser object
   const getLikingUsers = async (tweet: TweetV2) => {
-    try {
-      // Get the liking users for the tweet
-      const response = await twitterClient.bearer.tweetLikedBy(tweet.id);
-      console.log(response.data);
-      // Get the liking users from the response
-      // const users = response.data;
-      // // Update the likesByUser object with the number of likes by each user
-      // users.forEach((user) => {
-      //   likesByUser[user.username] = likesByUser[user.username]
-      //     ? likesByUser[user.username] + 1
-      //     : 1;
-      // });
-    } catch (err) {
-      // TwitterApiError
-      const error = err as TwitterApiError;
-      // Check if the error is a rate limit error
-      if (error.code === 429) {
-        // If the error is a rate limit error, wait for the rate limit to reset before retrying
-        console.log("Rate limit reached. Waiting for reset...");
-        await waitForRateLimitReset(
-          error.rateLimit?.reset || Math.floor(Date.now() / 1000) + 900
-        );
-        await getLikingUsers(tweet); // Retry the request
+    // Get the liking users for the tweet
+    const response = await twitterClient.bearer.tweetLikedBy(tweet.id);
+    // Get the liking users from the response
+    const users = response.data;
+    // Update the likesByUser object with the number of likes by each user
+    users.forEach((user) => {
+      const existingUser = likesByUser.find(
+        (userObj) => userObj.username === user.username
+      );
+      if (existingUser) {
+        existingUser.count++;
       } else {
-        // If the error is not a rate limit error, throw the error
-        throw error;
+        likesByUser.push({ username: user.username, count: 1 });
       }
-    }
+    });
   };
 
-  // Loop through each tweet and get the liking users
-  await Promise.all(
-    // FIXME; only picking one now
-    [tweets[0]].map(async (tweet) => {
+  try {
+    // Loop through each tweet and get the liking users
+    for (const tweet of tweets) {
       try {
         await getLikingUsers(tweet);
-      } catch (error) {
-        // Stop the loop if an error is thrown
-        console.error(error);
-        return;
+      } catch (err) {
+        // TwitterApiError
+        const error = err as TwitterApiError;
+        // Check if the error is a rate limit error
+        if (error.code === 429) {
+          // If the error is a rate limit error, wait for the rate limit to reset before retrying
+          console.log("Rate limit reached. Waiting for reset...");
+          await waitForRateLimitReset(
+            error.rateLimit?.reset || Math.floor(Date.now() / 1000) + 900
+          );
+          await getLikingUsers(tweet); // Retry the request
+        } else {
+          // If the error is not a rate limit error, throw the error and stop loop
+          throw error;
+        }
       }
-    })
-  );
+    }
+  } catch (err) {
+    console.log(err);
+  }
 
-  console.log(likesByUser);
+  // Sort the likesByUser object by the number of likes
+  const sortedLikesByUser = likesByUser.sort((a, b) => b.count - a.count);
+  console.log(sortedLikesByUser);
 }
