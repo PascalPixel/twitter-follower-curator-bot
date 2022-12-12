@@ -1,5 +1,6 @@
 import { readFile, readdir } from "fs/promises";
 import twitterClient from "../lib/twitterClient";
+import { getFollowers } from "./getFollowers";
 
 export default async function unfollowUsers(type = "top-following") {
   // import allowlist
@@ -26,37 +27,42 @@ export default async function unfollowUsers(type = "top-following") {
   const mostRecentFile = `${process.cwd()}/cache/${type}-${mostRecentFileDate}.json`;
   const mostRecentFileData = await readFile(mostRecentFile, "utf-8");
 
-  const mostRecentFileDataParsed: [number, number, number, string][] =
+  const users: [number, number, number, string][] =
     JSON.parse(mostRecentFileData);
 
-  // reverse order
-  const mostRecentFileDataParsedReversed = [
-    ...mostRecentFileDataParsed,
-  ].reverse();
-
-  // filter for only users with a ratio of 1 or less
-  const mostRecentFileDataParsedReversedFiltered =
-    mostRecentFileDataParsedReversed.filter(
-      ([following_count, followers_count, ratio]) => ratio <= 1
-    );
+  // sort by followers, ascending
+  const sortedUsers = users.sort(
+    (
+      [a_following_count, a_followers_count, a_ratio],
+      [b_following_count, b_followers_count, b_ratio]
+    ) => {
+      return a_followers_count - b_followers_count;
+    }
+  );
 
   // get ids
-  const lowest100Ids = mostRecentFileDataParsedReversedFiltered.map(
+  const followingHandles = sortedUsers.map(
     ([following_count, followers_count, ratio, linkToProfile]) =>
       linkToProfile.split("/")[3]
   );
 
-  // unfollow unless in allowlist
-  for (const id of lowest100Ids) {
-    // wait 1 second between each unfollow
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  // get followers
+  const followers = await getFollowers();
+  const followersHandles = followers.map((follower) => follower.username);
 
+  // unfollow unless in allowlist
+  for (const id of followingHandles) {
     try {
       // if user is in allowlist, skip
       if (allowlist.includes(id)) {
         console.log(`Skipping ${id} because they are in the allowlist`);
         continue;
+      } else if (followersHandles.includes(id)) {
+        console.log(`Skipping ${id} because they are a follower`);
+        continue;
       } else {
+        // wait 1 second between each unfollow
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         // get user ID from username
         const user = await twitterClient.readWrite.userByUsername(id);
         await twitterClient.readWrite.unfollow(
