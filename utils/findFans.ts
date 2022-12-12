@@ -1,4 +1,4 @@
-import twitterClient from "../lib/twitterClient.js";
+import twitterClient from "../lib/twitterClient";
 
 export default async function findFans() {
   if (!process.env.TWITTER_USER_ID) {
