@@ -1,3 +1,4 @@
+import { TweetV2, TwitterApiError } from "twitter-api-v2";
 import twitterClient from "../lib/twitterClient";
 
 export default async function findSupporters() {
@@ -22,7 +23,7 @@ export default async function findSupporters() {
   const likesByUser = {}; // Initialize an object to store the number of likes by each user
 
   // Create a function to wait until the rate limit resets
-  const waitForRateLimitReset = (resetTime) => {
+  const waitForRateLimitReset = (resetTime: number) => {
     // Calculate the time remaining until the rate limit resets
     const timeRemaining = resetTime * 1000 - Date.now();
     // Wait for the time remaining before continuing the loop
@@ -30,24 +31,29 @@ export default async function findSupporters() {
   };
 
   // Create a function to get the liking users for each tweet and update the likesByUser object
-  const getLikingUsers = async (tweet) => {
+  const getLikingUsers = async (tweet: TweetV2) => {
     try {
       // Get the liking users for the tweet
       const response = await twitterClient.bearer.tweetLikedBy(tweet.id);
+      console.log(response.data);
       // Get the liking users from the response
-      const users = response.data;
-      // Update the likesByUser object with the number of likes by each user
-      users.forEach((user) => {
-        likesByUser[user.username] = likesByUser[user.username]
-          ? likesByUser[user.username] + 1
-          : 1;
-      });
-    } catch (error) {
+      // const users = response.data;
+      // // Update the likesByUser object with the number of likes by each user
+      // users.forEach((user) => {
+      //   likesByUser[user.username] = likesByUser[user.username]
+      //     ? likesByUser[user.username] + 1
+      //     : 1;
+      // });
+    } catch (err) {
+      // TwitterApiError
+      const error = err as TwitterApiError;
       // Check if the error is a rate limit error
       if (error.code === 429) {
         // If the error is a rate limit error, wait for the rate limit to reset before retrying
         console.log("Rate limit reached. Waiting for reset...");
-        await waitForRateLimitReset(error.rateLimit.reset);
+        await waitForRateLimitReset(
+          error.rateLimit?.reset || Math.floor(Date.now() / 1000) + 900
+        );
         await getLikingUsers(tweet); // Retry the request
       } else {
         // If the error is not a rate limit error, throw the error
