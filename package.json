@@ -1,10 +1,10 @@
 {
   "scripts": {
     "start": "ts-node ./scripts/main.ts",
-    "updateCache": "ts-node ./scripts/updateCache.ts",
-    "reportDifference": "ts-node ./scripts/reportDifference.ts",
     "unfollow": "ts-node ./scripts/unfollow.ts",
-    "supporters": "ts-node ./scripts/supporters.ts"
+    "supporters": "ts-node ./scripts/supporters.ts",
+    "partial:updateCache": "ts-node ./scripts/updateCache.ts",
+    "partial:reportDifference": "ts-node ./scripts/reportDifference.ts"
   },
   "dependencies": {
     "@types/node": "^18.11.13",

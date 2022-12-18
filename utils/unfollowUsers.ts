@@ -48,6 +48,11 @@ export default async function unfollowUsers(type = "following") {
   // unfollow unless in allowlist
   for (const id of followingHandles) {
     try {
+      const userData = users.find((user) => user.username === id);
+
+      // if user is not in cache, skip
+      if (!userData) continue;
+
       // if user is in allowlist, skip
       if (allowlist.includes(id)) {
         console.log(`Skipping ${id} because they are in the allowlist`);
@@ -57,6 +62,24 @@ export default async function unfollowUsers(type = "following") {
       // if user is a follower, skip
       if (followersHandles.includes(id)) {
         console.log(`Skipping ${id} because they are a follower`);
+        continue;
+      }
+
+      // if user has more than a ratio of 1:5 followers to following, skip
+      if (
+        (userData.public_metrics?.followers_count || 0) /
+          (userData.public_metrics?.following_count || 0) >
+        5
+      ) {
+        console.log(`Skipping ${id} because they have a high following ratio`);
+        continue;
+      }
+
+      // if a user has more than 10000 followers, skip
+      if ((userData.public_metrics?.followers_count || 0) > 10000) {
+        console.log(
+          `Skipping ${id} because they have more than 10000 followers`
+        );
         continue;
       }
 
