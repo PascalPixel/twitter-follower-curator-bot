@@ -31,82 +31,88 @@ export default async function unfollowUsers(type = "following") {
 
   const users: UserV2[] = JSON.parse(mostRecentFileData);
 
-  // sort by followers, ascending
+  // sort by followers, ascending upward
   const sortedUsers = users.sort(
     (a, b) =>
-      (b.public_metrics?.followers_count || 0) -
-      (a.public_metrics?.followers_count || 0)
+      (a.public_metrics?.followers_count || 0) -
+      (b.public_metrics?.followers_count || 0)
   );
-
-  // get ids
-  const followingHandles = sortedUsers.map((user) => user.username);
 
   // get followers
   const followers = await getFollowers();
   const followersHandles = followers.map((follower) => follower.username);
 
   // unfollow unless in allowlist
-  for (const id of followingHandles) {
+  for (const user of sortedUsers) {
     try {
-      const userData = users.find((user) => user.username === id);
-
-      // if user is not in cache, skip
-      if (userData) {
-        if (allowlist.includes(id)) {
-          // if user is in allowlist, skip
-          console.log(
-            // green
-            "\x1b[32m%s\x1b[0m",
-            `Skipping  `,
-            `@${id} because they are in the allowlist`
-          );
-        } else if (followersHandles.includes(id)) {
-          // if user is a follower, skip
-          console.log(
-            // yellow
-            "\x1b[33m%s\x1b[0m",
-            `Skipping  `,
-            `@${id} because they are a follower`
-          );
-        } else if (
-          (userData.public_metrics?.followers_count || 0) /
-            (userData.public_metrics?.following_count || 0) >
-          5
-        ) {
-          // if user has more than a ratio of 1:5 followers to following, skip
-          console.log(
-            // magenta
-            "\x1b[35m%s\x1b[0m",
-            `Skipping  `,
-            `@${id} because they have a high following ratio`
-          );
-        } else if ((userData.public_metrics?.followers_count || 0) > 10000) {
-          // if a user has more than 10000 followers, skip
-          console.log(
-            // blue
-            "\x1b[34m%s\x1b[0m",
-            `Skipping  `,
-            `@${id} because they have more than 10000 followers`
-          );
-        } else {
-          // get user ID from username
-          const user = await twitterClient.readWrite.userByUsername(id);
-
-          // unfollow (50 per 15 minutes)
-          await twitterClient.readWrite.unfollow(
-            process.env.TWITTER_USER_ID || "",
-            user.data.id
-          );
-
-          // Success
-          console.log(
-            // red
-            "\x1b[31m%s\x1b[0m",
-            `Unfollowed`,
-            `@${id}`
-          );
-        }
+      // if user is in allowlist, skip
+      if (allowlist.includes(user.username)) {
+        console.log(
+          // green
+          "\x1b[32m%s\x1b[0m",
+          `Skipping   `,
+          `@${user.username} because they are in the allowlist`
+        );
+        continue;
       }
+
+      // if user is a follower, skip
+      if (followersHandles.includes(user.username)) {
+        console.log(
+          // yellow
+          "\x1b[33m%s\x1b[0m",
+          `Skipping   `,
+          `@${user.username} because they are a follower`
+        );
+        continue;
+      }
+
+      // if user has more than a ratio of 1:5 followers to following, skip
+      if (
+        (user.public_metrics?.followers_count || 0) /
+          (user.public_metrics?.following_count || 0) >
+        5
+      ) {
+        console.log(
+          // blue
+          "\x1b[34m%s\x1b[0m",
+          `Skipping   `,
+          `@${user.username} because they have a high following ratio`
+        );
+        continue;
+      }
+
+      // if a user has more than 10000 followers, skip
+      if ((user.public_metrics?.followers_count || 0) > 10000) {
+        console.log(
+          // magenta
+          "\x1b[35m%s\x1b[0m",
+          `Skipping   `,
+          `@${user.username} because they have more than 10k followers`
+        );
+        continue;
+      }
+
+      console.log(
+        // cyan
+        "\x1b[36m%s\x1b[0m",
+        `Unfollowing`,
+        `@${user.username}`
+      );
+
+      // unfollow (50 per 15 minutes)
+      await twitterClient.readWrite.unfollow(
+        process.env.TWITTER_USER_ID || "",
+        user.id
+      );
+
+      // Success
+      console.log(
+        // red
+        "\x1b[31m%s\x1b[0m",
+        `Unfollowed `,
+        `@${user.username}`
+      );
     } catch (err) {
       const e = err as TwitterApiError;
       if (e.code === 429) {
