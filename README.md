@@ -12,7 +12,6 @@
 
 - `npm start`
 - You will find a `followers-YYYY-MM-DDon` and a `following-YYYY-MM-DDon` in the `cache` folder.
-- You will find a `top-followers-YYYY-MM-DDon` and a `top-following-YYYY-MM-DDon` in the `cache` folder.
 
 ## Unfollow
 

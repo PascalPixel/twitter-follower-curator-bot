@@ -1,10 +1,10 @@
 import { readFile, readdir } from "fs/promises";
-import type { TwitterApiError } from "twitter-api-v2";
+import type { TwitterApiError, UserV2 } from "twitter-api-v2";
 
 import twitterClient from "../lib/twitterClient";
 import { getFollowers } from "./getFollowers";
 
-export default async function unfollowUsers(type = "top-following") {
+export default async function unfollowUsers(type = "following") {
   // import allowlist
   const allowlistRaw = await readFile(
     `${process.cwd()}/allowlist.json`,
@@ -29,24 +29,17 @@ export default async function unfollowUsers(type = "top-following") {
   const mostRecentFile = `${process.cwd()}/cache/${type}-${mostRecentFileDate}.json`;
   const mostRecentFileData = await readFile(mostRecentFile, "utf-8");
 
-  const users: [number, number, number, string][] =
-    JSON.parse(mostRecentFileData);
+  const users: UserV2[] = JSON.parse(mostRecentFileData);
 
   // sort by followers, ascending
   const sortedUsers = users.sort(
-    (
-      [a_following_count, a_followers_count, a_ratio],
-      [b_following_count, b_followers_count, b_ratio]
-    ) => {
-      return a_followers_count - b_followers_count;
-    }
+    (a, b) =>
+      (b.public_metrics?.followers_count || 0) -
+      (a.public_metrics?.followers_count || 0)
   );
 
   // get ids
-  const followingHandles = sortedUsers.map(
-    ([following_count, followers_count, ratio, linkToProfile]) =>
-      linkToProfile.split("/")[3]
-  );
+  const followingHandles = sortedUsers.map((user) => user.username);
 
   // get followers
   const followers = await getFollowers();
