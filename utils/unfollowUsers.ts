@@ -51,76 +51,64 @@ export default async function unfollowUsers(type = "following") {
       const userData = users.find((user) => user.username === id);
 
       // if user is not in cache, skip
-      if (!userData) continue;
+      if (userData) {
+        if (allowlist.includes(id)) {
+          // if user is in allowlist, skip
+          console.log(
+            // green
+            "\x1b[32m%s\x1b[0m",
+            `Skipping  `,
+            `@${id} because they are in the allowlist`
+          );
+        } else if (followersHandles.includes(id)) {
+          // if user is a follower, skip
+          console.log(
+            // yellow
+            "\x1b[33m%s\x1b[0m",
+            `Skipping  `,
+            `@${id} because they are a follower`
+          );
+        } else if (
+          (userData.public_metrics?.followers_count || 0) /
+            (userData.public_metrics?.following_count || 0) >
+          5
+        ) {
+          // if user has more than a ratio of 1:5 followers to following, skip
+          console.log(
+            // magenta
+            "\x1b[35m%s\x1b[0m",
+            `Skipping  `,
+            `@${id} because they have a high following ratio`
+          );
+        } else if ((userData.public_metrics?.followers_count || 0) > 10000) {
+          // if a user has more than 10000 followers, skip
+          console.log(
+            // blue
+            "\x1b[34m%s\x1b[0m",
+            `Skipping  `,
+            `@${id} because they have more than 10000 followers`
+          );
+        } else {
+          // get user ID from username
+          const user = await twitterClient.readWrite.userByUsername(id);
 
-      // if user is in allowlist, skip
-      if (allowlist.includes(id)) {
-        console.log(
-          // green
-          "\x1b[32m%s\x1b[0m",
-          `Skipping `,
-          `@${id} because they are in the allowlist`
-        );
-        continue;
+          // unfollow (50 per 15 minutes)
+          await twitterClient.readWrite.unfollow(
+            process.env.TWITTER_USER_ID || "",
+            user.data.id
+          );
+
+          // Success
+          console.log(
+            // red
+            "\x1b[31m%s\x1b[0m",
+            `Unfollowed`,
+            `@${id}`
+          );
+        }
       }
-
-      // if user is a follower, skip
-      if (followersHandles.includes(id)) {
-        console.log(
-          // yellow
-          "\x1b[33m%s\x1b[0m",
-          `Skipping `,
-          `@${id} because they are a follower`
-        );
-        continue;
-      }
-
-      // if user has more than a ratio of 1:5 followers to following, skip
-      if (
-        (userData.public_metrics?.followers_count || 0) /
-          (userData.public_metrics?.following_count || 0) >
-        5
-      ) {
-        console.log(
-          // magenta
-          "\x1b[35m%s\x1b[0m",
-          `Skipping `,
-          `@${id} because they have a high following ratio`
-        );
-        continue;
-      }
-
-      // if a user has more than 10000 followers, skip
-      if ((userData.public_metrics?.followers_count || 0) > 10000) {
-        console.log(
-          // blue
-          "\x1b[34m%s\x1b[0m",
-          `Skipping `,
-          `@${id} because they have more than 10000 followers`
-        );
-        continue;
-      }
-
-      // get user ID from username
-      const user = await twitterClient.readWrite.userByUsername(id);
-
-      // unfollow (50 per 15 minutes)
-      await twitterClient.readWrite.unfollow(
-        process.env.TWITTER_USER_ID || "",
-        user.data.id
-      );
-
-      // Success
-      console.log(
-        // red
-        "\x1b[31m%s\x1b[0m",
-        `Unfollowed `,
-        `@${id}`
-      );
     } catch (err) {
       const e = err as TwitterApiError;
-      console.log(`Error unfollowing ${id}`);
-      // if rateLimit
       if (e.code === 429) {
         // wait until rate limit resets
         const rateLimit = e.rateLimit || { reset: 0 };
