@@ -20,14 +20,6 @@ export default async function findSupporters() {
   // GET /2/tweets/:id/liking_users
   const likesByUser: { username: string; count: number }[] = [];
 
-  // Create a function to wait until the rate limit resets
-  const waitForRateLimitReset = (resetTime: number) => {
-    // Calculate the time remaining until the rate limit resets
-    const timeRemaining = resetTime * 1000 - Date.now();
-    // Wait for the time remaining before continuing the loop
-    return new Promise((resolve) => setTimeout(resolve, timeRemaining));
-  };
-
   // Create a function to get the liking users for each tweet and update the likesByUser object
   const getLikingUsers = async (tweet: TweetV2) => {
     try {
