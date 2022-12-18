@@ -1,4 +1,6 @@
 import { readFile, readdir } from "fs/promises";
+import type { TwitterApiError } from "twitter-api-v2";
+
 import twitterClient from "../lib/twitterClient";
 import { getFollowers } from "./getFollowers";
 
@@ -76,12 +78,13 @@ export default async function unfollowUsers(type = "top-following") {
 
       // Success
       console.log(`Unfollowed ${id}`);
-    } catch (e: any) {
+    } catch (err) {
+      const e = err as TwitterApiError;
       console.log(`Error unfollowing ${id}`);
       // if rateLimit
-      if (e.message.includes("429")) {
+      if (e.code === 429) {
         // wait until rate limit resets
-        const rateLimit = e.rateLimit;
+        const rateLimit = e.rateLimit || { reset: 0 };
         const resetTime = rateLimit.reset * 1000;
         const now = new Date().getTime();
         const waitTime = resetTime - now;
