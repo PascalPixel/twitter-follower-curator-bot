@@ -129,7 +129,11 @@ export default async function unfollowUsers(type = "following") {
           }s`
         );
 
+        // wait
         await new Promise((resolve) => setTimeout(resolve, waitTime));
+
+        // 5s bonus wait
+        await new Promise((resolve) => setTimeout(resolve, 5000));
       } else {
         console.error(e);
         break;
