@@ -1,5 +1,5 @@
 import { writeFile } from "fs/promises";
-import { UserV2, UserV2TimelineResult } from "twitter-api-v2";
+import { TwitterApiError, UserV2, UserV2TimelineResult } from "twitter-api-v2";
 import twitterClient from "../lib/twitterClient";
 
 export default async function cacheTwitterUsers(
@@ -22,25 +22,46 @@ export default async function cacheTwitterUsers(
   while (usersRes.meta.next_token) {
     console.log(`Getting ${type}... ` + usersRes.meta.next_token);
 
-    usersRes = await twitterClient.bearer[type](
-      process.env.TWITTER_USER_ID,
-      usersRes.meta.next_token === "x"
-        ? { "user.fields": "public_metrics", max_results: 1000 }
-        : {
-            "user.fields": "public_metrics",
-            max_results: 1000,
-            pagination_token: usersRes.meta.next_token,
-          }
-    );
-    usersRes.data.forEach((user) => {
-      users.push(user);
-    });
+    try {
+      usersRes = await twitterClient.bearer[type](
+        process.env.TWITTER_USER_ID,
+        usersRes.meta.next_token === "x"
+          ? { "user.fields": "public_metrics", max_results: 1000 }
+          : {
+              "user.fields": "public_metrics",
+              max_results: 1000,
+              pagination_token: usersRes.meta.next_token,
+            }
+      );
+      usersRes.data.forEach((user) => {
+        users.push(user);
+      });
 
-    // list total
-    console.log("Got " + users.length + " " + type + ".");
+      // list total
+      console.log("Got " + users.length + " " + type + ".");
+    } catch (err) {
+      // TwitterApiError
+      const error = err as TwitterApiError;
+      if (error.code === 429) {
+        // wait until rate limit resets
+        const rateLimit = error.rateLimit || { reset: 0 };
+        const resetTime = rateLimit.reset * 1000;
+        const now = new Date().getTime();
+        const waitTime = resetTime - now;
 
-    // 1 call per minute to avoid hitting rate limit
-    await new Promise((resolve) => setTimeout(resolve, 1000 * 60));
+        // print minutes and seconds waiting
+        console.log(
+          `Waiting ${Math.floor(waitTime / 1000 / 60)}m ${
+            Math.floor(waitTime / 1000) % 60
+          }s`
+        );
+
+        // wait
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      } else {
+        throw error;
+      }
+    }
   }
 
   await writeFile(
