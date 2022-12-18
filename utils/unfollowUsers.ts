@@ -55,13 +55,23 @@ export default async function unfollowUsers(type = "following") {
 
       // if user is in allowlist, skip
       if (allowlist.includes(id)) {
-        console.log(`Skipping ${id} because they are in the allowlist`);
+        console.log(
+          // green
+          "\x1b[32m%s\x1b[0m",
+          `Skipping `,
+          `@${id} because they are in the allowlist`
+        );
         continue;
       }
 
       // if user is a follower, skip
       if (followersHandles.includes(id)) {
-        console.log(`Skipping ${id} because they are a follower`);
+        console.log(
+          // yellow
+          "\x1b[33m%s\x1b[0m",
+          `Skipping `,
+          `@${id} because they are a follower`
+        );
         continue;
       }
 
@@ -71,14 +81,22 @@ export default async function unfollowUsers(type = "following") {
           (userData.public_metrics?.following_count || 0) >
         5
       ) {
-        console.log(`Skipping ${id} because they have a high following ratio`);
+        console.log(
+          // magenta
+          "\x1b[35m%s\x1b[0m",
+          `Skipping `,
+          `@${id} because they have a high following ratio`
+        );
         continue;
       }
 
       // if a user has more than 10000 followers, skip
       if ((userData.public_metrics?.followers_count || 0) > 10000) {
         console.log(
-          `Skipping ${id} because they have more than 10000 followers`
+          // blue
+          "\x1b[34m%s\x1b[0m",
+          `Skipping `,
+          `@${id} because they have more than 10000 followers`
         );
         continue;
       }
@@ -93,7 +111,12 @@ export default async function unfollowUsers(type = "following") {
       );
 
       // Success
-      console.log(`Unfollowed ${id}`);
+      console.log(
+        // red
+        "\x1b[31m%s\x1b[0m",
+        `Unfollowed `,
+        `@${id}`
+      );
     } catch (err) {
       const e = err as TwitterApiError;
       console.log(`Error unfollowing ${id}`);
