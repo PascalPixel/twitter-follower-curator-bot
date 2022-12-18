@@ -56,23 +56,28 @@ export default async function unfollowUsers(type = "top-following") {
       // if user is in allowlist, skip
       if (allowlist.includes(id)) {
         console.log(`Skipping ${id} because they are in the allowlist`);
-        continue;
-      } else if (followersHandles.includes(id)) {
-        console.log(`Skipping ${id} because they are a follower`);
-        continue;
-      } else {
-        // wait 1 second between each unfollow
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        // get user ID from username
-        const user = await twitterClient.readWrite.userByUsername(id);
-        await twitterClient.readWrite.unfollow(
-          process.env.TWITTER_USER_ID || "",
-          user.data.id
-        );
-        console.log(`Unfollowed ${id}`);
+        return;
       }
+
+      // if user is a follower, skip
+      if (followersHandles.includes(id)) {
+        console.log(`Skipping ${id} because they are a follower`);
+        return;
+      }
+
+      // get user ID from username
+      const user = await twitterClient.readWrite.userByUsername(id);
+
+      // unfollow (50 per 15 minutes)
+      await twitterClient.readWrite.unfollow(
+        process.env.TWITTER_USER_ID || "",
+        user.data.id
+      );
+
+      // Success
+      console.log(`Unfollowed ${id}`);
     } catch (e: any) {
-      console.log(`Error unfollowing ${id}`, e);
+      console.log(`Error unfollowing ${id}`);
       // if rateLimit
       if (e.message.includes("429")) {
         // wait until rate limit resets
@@ -90,6 +95,7 @@ export default async function unfollowUsers(type = "top-following") {
 
         await new Promise((resolve) => setTimeout(resolve, waitTime));
       } else {
+        console.error(e);
         break;
       }
     }
