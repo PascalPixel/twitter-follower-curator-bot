@@ -56,13 +56,13 @@ export default async function unfollowUsers(type = "top-following") {
       // if user is in allowlist, skip
       if (allowlist.includes(id)) {
         console.log(`Skipping ${id} because they are in the allowlist`);
-        return;
+        continue;
       }
 
       // if user is a follower, skip
       if (followersHandles.includes(id)) {
         console.log(`Skipping ${id} because they are a follower`);
-        return;
+        continue;
       }
 
       // get user ID from username
