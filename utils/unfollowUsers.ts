@@ -66,17 +66,18 @@ export default async function unfollowUsers(type = "following") {
       continue;
     }
 
-    // if user has more than a ratio of 1:5 followers to following, skip
+    // if user has more than a ratio of 1:5 followers to following & more than 1k followers, skip
     if (
       (user.public_metrics?.followers_count || 0) /
         (user.public_metrics?.following_count || 0) >
-      5
+        5 &&
+      (user.public_metrics?.followers_count || 0) > 1000
     ) {
       console.log(
         // blue
         "\x1b[34m%s\x1b[0m",
         `Skipping  `,
-        `@${user.username} because they have a high following ratio`
+        `@${user.username} because they have a >5 ratio + >1k followers`
       );
       continue;
     }
