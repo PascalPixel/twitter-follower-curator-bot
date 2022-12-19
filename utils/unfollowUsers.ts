@@ -96,26 +96,26 @@ export default async function unfollowUsers(type = "following") {
       userDetails.isBot = true;
     }
 
-    // // Inactive
-    // // unfollow is user's last tweet is more than 1 year old
-    // const response = await twitterClient.bearer.userTimeline(user.id, {
-    //   max_results: 5,
-    //   exclude: ["retweets", "replies"],
-    //   "tweet.fields": ["created_at"],
-    // });
-    // if (response?.data?.data?.length) {
-    //   const tweets = response.data.data;
-    //   const lastTweet = tweets[0];
-    //   const lastTweetDate = lastTweet.created_at
-    //     ? new Date(lastTweet.created_at)
-    //     : new Date();
-    //   const now = new Date();
-    //   const timeSinceLastTweet = now.getTime() - lastTweetDate.getTime();
-    //   const daysSinceLastTweet = timeSinceLastTweet / (1000 * 60 * 60 * 24);
-    //   if (daysSinceLastTweet > 365) {
-    //     userDetails.isInactive = true;
-    //   }
-    // }
+    // Inactive
+    // unfollow is user's last tweet is more than 1 year old
+    const response = await twitterClient.bearer.userTimeline(user.id, {
+      max_results: 5,
+      exclude: ["retweets", "replies"],
+      "tweet.fields": ["created_at"],
+    });
+    if (response?.data?.data?.length) {
+      const tweets = response.data.data;
+      const lastTweet = tweets[0];
+      const lastTweetDate = lastTweet.created_at
+        ? new Date(lastTweet.created_at)
+        : new Date();
+      const now = new Date();
+      const timeSinceLastTweet = now.getTime() - lastTweetDate.getTime();
+      const daysSinceLastTweet = timeSinceLastTweet / (1000 * 60 * 60 * 24);
+      if (daysSinceLastTweet > 365) {
+        userDetails.isInactive = true;
+      }
+    }
 
     // continue conditions
     let willUnfollow = true;
