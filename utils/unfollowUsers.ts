@@ -106,6 +106,9 @@ export default async function unfollowUsers(type = "following") {
         `Unfollowed`,
         `@${user.username}`
       );
+
+      // wait 300ms between unfollows
+      await new Promise((resolve) => setTimeout(resolve, 300));
     } catch (err) {
       const e = err as TwitterApiError;
 
