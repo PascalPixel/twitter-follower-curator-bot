@@ -100,7 +100,6 @@ export default async function unfollowUsers(type = "following") {
     // unfollow is user's last tweet is more than 1 year old
     const response = await twitterClient.bearer.userTimeline(user.id, {
       max_results: 5,
-      exclude: ["retweets", "replies"],
       "tweet.fields": ["created_at"],
     });
     if (response?.data?.data?.length) {
