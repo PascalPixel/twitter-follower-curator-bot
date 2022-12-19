@@ -91,6 +91,11 @@ export default async function unfollowUsers(type = "following") {
       userDetails.isBot = true;
     }
 
+    // if ratio is less than 1:1, they are probably a bot
+    if (followers_count / following_count <= 1) {
+      userDetails.isBot = true;
+    }
+
     // // Inactive
     // // unfollow is user's last tweet is more than 1 year old
     // const response = await twitterClient.bearer.userTimeline(user.id, {
@@ -144,7 +149,10 @@ export default async function unfollowUsers(type = "following") {
       "\t",
       followers_count,
       "\t",
-      Math.round(followers_count / following_count)
+
+      Math.round(followers_count / following_count) === Infinity
+        ? followers_count
+        : Math.round(followers_count / following_count)
     );
 
     if (!willUnfollow) continue;
