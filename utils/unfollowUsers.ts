@@ -40,58 +40,77 @@ export default async function unfollowUsers(type = "following") {
 
   // get followers
   const followers = await getFollowers();
-  const followersHandles = followers.map((follower) => follower.username);
+  const followerlist = followers.map((follower) => follower.username);
 
   // unfollow unless in allowlist
   for (const user of sortedUsers) {
-    // if user is in allowlist, skip
-    if (allowlist.includes(user.username)) {
+    const followers_count = user.public_metrics?.followers_count || 0;
+    const following_count = user.public_metrics?.following_count || 0;
+
+    // should we unfollow?
+    let shouldUnfollow = true;
+
+    // if user is a follower, skip
+    if (followerlist.includes(user.username)) {
       console.log(
         // green
         "\x1b[32m%s\x1b[0m",
         `Skipping  `,
-        `@${user.username} because they are in the allowlist`
+        `@${user.username} because they are a follower`
       );
-      continue;
+      shouldUnfollow = false;
     }
 
-    // if user is a follower, skip
-    if (followersHandles.includes(user.username)) {
+    // if user is in allowlist, skip
+    if (allowlist.includes(user.username)) {
       console.log(
         // yellow
         "\x1b[33m%s\x1b[0m",
         `Skipping  `,
-        `@${user.username} because they are a follower`
+        `@${user.username} because they are in the allowlist`
       );
-      continue;
+      shouldUnfollow = false;
     }
 
-    // if user has more than a ratio of 1:5 followers to following & more than 1k followers, skip
-    if (
-      (user.public_metrics?.followers_count || 0) /
-        (user.public_metrics?.following_count || 0) >
-        5 &&
-      (user.public_metrics?.followers_count || 0) > 1000
-    ) {
+    // skip if user has
+    // - more than a ratio of 1:2 followers to following
+    // - more than 1k followers
+    if (followers_count / following_count > 2 && followers_count > 1_000) {
       console.log(
-        // blue
-        "\x1b[34m%s\x1b[0m",
+        // dark gray
+        "\x1b[90m%s\x1b[0m",
         `Skipping  `,
-        `@${user.username} because they have a >5 ratio + >1k followers`
+        `@${user.username} because they have a >2 ratio + >1k followers`
       );
-      continue;
+      shouldUnfollow = false;
     }
 
-    // if a user has more than 10000 followers, skip
-    if ((user.public_metrics?.followers_count || 0) > 10000) {
+    // skip if user has
+    // - more than a ratio of 1:10 followers to following
+    // - more than 10k followers
+    if (followers_count / following_count > 10 && followers_count > 10_000) {
       console.log(
         // magenta
         "\x1b[35m%s\x1b[0m",
         `Skipping  `,
-        `@${user.username} because they have more than 10k followers`
+        `@${user.username} because they have a >10 ratio + >10k followers`
       );
-      continue;
+      shouldUnfollow = false;
     }
+
+    // if user follows more than 10k people, they are probably a bot
+    if (following_count > 10_000) {
+      console.log(
+        // red
+        "\x1b[31m%s\x1b[0m",
+        `Bot       `,
+        `@${user.username} because they follow >10k people`
+      );
+      shouldUnfollow = true;
+    }
+
+    // Skip unfollow if we shouldn't unfollow
+    if (!shouldUnfollow) continue;
 
     try {
       // unfollow (50 per 15 minutes)
