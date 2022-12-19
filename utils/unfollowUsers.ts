@@ -46,6 +46,7 @@ export default async function unfollowUsers(type = "following") {
   for (const user of sortedUsers) {
     const followers_count = user.public_metrics?.followers_count || 0;
     const following_count = user.public_metrics?.following_count || 0;
+    const ratio = followers_count / following_count;
 
     // user details
     const userDetails = {
@@ -69,15 +70,15 @@ export default async function unfollowUsers(type = "following") {
 
     // if user has
     // - more than a ratio of 1:2 followers to following
-    // - more than 1k followers
-    if (followers_count / following_count > 2 && followers_count > 1_000) {
+    // - less than 10k followers
+    if (followers_count < 10_000 && ratio >= 2) {
       userDetails.isUnderground = true;
     }
 
     // if user has
     // - more than a ratio of 1:10 followers to following
     // - more than 10k followers
-    if (followers_count / following_count > 10 && followers_count > 10_000) {
+    if (followers_count > 10_000 && ratio >= 8) {
       userDetails.isPopular = true;
     }
 
@@ -92,29 +93,31 @@ export default async function unfollowUsers(type = "following") {
     }
 
     // if ratio is less than 1:1, they are probably a bot
-    if (followers_count / following_count <= 1) {
+    if (ratio <= 1) {
       userDetails.isBot = true;
     }
 
     // Inactive
     // unfollow is user's last tweet is more than 1 year old
-    const response = await twitterClient.bearer.userTimeline(user.id, {
-      max_results: 5,
-      "tweet.fields": ["created_at"],
-    });
-    if (response?.data?.data?.length) {
-      const tweets = response.data.data;
-      const lastTweet = tweets[0];
-      const lastTweetDate = lastTweet.created_at
-        ? new Date(lastTweet.created_at)
-        : new Date();
-      const now = new Date();
-      const timeSinceLastTweet = now.getTime() - lastTweetDate.getTime();
-      const daysSinceLastTweet = timeSinceLastTweet / (1000 * 60 * 60 * 24);
-      if (daysSinceLastTweet > 365) {
-        userDetails.isInactive = true;
-      }
-    }
+    // if (!userDetails.onAllowlist) {
+    //   const response = await twitterClient.bearer.userTimeline(user.id, {
+    //     max_results: 5,
+    //     "tweet.fields": ["created_at"],
+    //   });
+    //   if (response?.data?.data?.length) {
+    //     const tweets = response.data.data;
+    //     const lastTweet = tweets[0];
+    //     const lastTweetDate = lastTweet.created_at
+    //       ? new Date(lastTweet.created_at)
+    //       : new Date();
+    //     const now = new Date();
+    //     const timeSinceLastTweet = now.getTime() - lastTweetDate.getTime();
+    //     const daysSinceLastTweet = timeSinceLastTweet / (1000 * 60 * 60 * 24);
+    //     if (daysSinceLastTweet > 365) {
+    //       userDetails.isInactive = true;
+    //     }
+    //   }
+    // }
 
     // continue conditions
     let willUnfollow = true;
@@ -149,9 +152,7 @@ export default async function unfollowUsers(type = "following") {
       followers_count,
       "\t",
 
-      Math.round(followers_count / following_count) === Infinity
-        ? followers_count
-        : Math.round(followers_count / following_count)
+      Math.round(ratio) === Infinity ? followers_count : Math.round(ratio)
     );
 
     if (!willUnfollow) continue;
