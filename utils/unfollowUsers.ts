@@ -47,88 +47,117 @@ export default async function unfollowUsers(type = "following") {
     const followers_count = user.public_metrics?.followers_count || 0;
     const following_count = user.public_metrics?.following_count || 0;
 
-    // should we unfollow?
-    let shouldUnfollow = true;
+    // user details
+    const userDetails = {
+      onAllowlist: false,
+      isFollower: false,
+      isUnderground: false,
+      isPopular: false,
+      isBot: false,
+      isInactive: false,
+    };
 
-    // if user is a follower, skip
-    if (followerlist.includes(user.username)) {
-      console.log(
-        // green
-        "\x1b[32m%s\x1b[0m",
-        `Skipping  `,
-        `@${user.username} because they are a follower`
-      );
-      shouldUnfollow = false;
-    }
-
-    // if user is in allowlist, skip
+    // if user is in allowlist
     if (allowlist.includes(user.username)) {
-      console.log(
-        // yellow
-        "\x1b[33m%s\x1b[0m",
-        `Skipping  `,
-        `@${user.username} because they are in the allowlist`
-      );
-      shouldUnfollow = false;
+      userDetails.onAllowlist = true;
     }
 
-    // skip if user has
+    // if user is a follower
+    if (followerlist.includes(user.username)) {
+      userDetails.isFollower = true;
+    }
+
+    // if user has
     // - more than a ratio of 1:2 followers to following
     // - more than 1k followers
     if (followers_count / following_count > 2 && followers_count > 1_000) {
-      console.log(
-        // dark gray
-        "\x1b[90m%s\x1b[0m",
-        `Skipping  `,
-        `@${user.username} because they have a >2 ratio + >1k followers`
-      );
-      shouldUnfollow = false;
+      userDetails.isUnderground = true;
     }
 
-    // skip if user has
+    // if user has
     // - more than a ratio of 1:10 followers to following
     // - more than 10k followers
     if (followers_count / following_count > 10 && followers_count > 10_000) {
-      console.log(
-        // magenta
-        "\x1b[35m%s\x1b[0m",
-        `Skipping  `,
-        `@${user.username} because they have a >10 ratio + >10k followers`
-      );
-      shouldUnfollow = false;
+      userDetails.isPopular = true;
     }
 
     // if user follows more than 10k people, they are probably a bot
     if (following_count > 10_000) {
-      console.log(
-        // red
-        "\x1b[31m%s\x1b[0m",
-        `Bot       `,
-        `@${user.username} because they follow >10k people`
-      );
-      shouldUnfollow = true;
+      userDetails.isBot = true;
     }
 
-    // Skip unfollow if we shouldn't unfollow
-    if (!shouldUnfollow) continue;
+    // if user has less than 1_000 followers, they are probably a bot
+    if (followers_count < 1_000) {
+      userDetails.isBot = true;
+    }
+
+    // // Inactive
+    // // unfollow is user's last tweet is more than 1 year old
+    // const response = await twitterClient.bearer.userTimeline(user.id, {
+    //   max_results: 5,
+    //   exclude: ["retweets", "replies"],
+    //   "tweet.fields": ["created_at"],
+    // });
+    // if (response?.data?.data?.length) {
+    //   const tweets = response.data.data;
+    //   const lastTweet = tweets[0];
+    //   const lastTweetDate = lastTweet.created_at
+    //     ? new Date(lastTweet.created_at)
+    //     : new Date();
+    //   const now = new Date();
+    //   const timeSinceLastTweet = now.getTime() - lastTweetDate.getTime();
+    //   const daysSinceLastTweet = timeSinceLastTweet / (1000 * 60 * 60 * 24);
+    //   if (daysSinceLastTweet > 365) {
+    //     userDetails.isInactive = true;
+    //   }
+    // }
+
+    // continue conditions
+    let willUnfollow = true;
+    if (userDetails.onAllowlist) {
+      willUnfollow = false;
+    } else if (
+      !userDetails.isBot &&
+      !userDetails.isInactive &&
+      (userDetails.isFollower ||
+        userDetails.isUnderground ||
+        userDetails.isPopular)
+    ) {
+      willUnfollow = false;
+    }
+
+    // log user details
+    console.log(
+      willUnfollow ? "\x1b[31m%s\x1b[0m" : "\x1b[32m%s\x1b[0m",
+      willUnfollow ? "Unfollow" : "Skipping",
+      `@${user.username.padEnd(16).slice(0, 16)}`,
+      [
+        userDetails.onAllowlist ? "A" : "_",
+        userDetails.isFollower ? "F" : "_",
+        userDetails.isUnderground ? "U" : "_",
+        userDetails.isPopular ? "P" : "_",
+        userDetails.isBot ? "B" : "_",
+        userDetails.isInactive ? "I" : "_",
+      ].join(""),
+      "\t",
+      following_count,
+      "\t",
+      followers_count,
+      "\t",
+      Math.round(followers_count / following_count)
+    );
+
+    if (!willUnfollow) continue;
 
     try {
+      // wait 300ms between unfollows
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
       // unfollow (50 per 15 minutes)
       await twitterClient.readWrite.unfollow(
         process.env.TWITTER_USER_ID || "",
         user.id
       );
-
-      // Success
-      console.log(
-        // red
-        "\x1b[31m%s\x1b[0m",
-        `Unfollowed`,
-        `@${user.username}`
-      );
-
-      // wait 300ms between unfollows
-      await new Promise((resolve) => setTimeout(resolve, 300));
     } catch (err) {
       const e = err as TwitterApiError;
 
