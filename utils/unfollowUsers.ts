@@ -71,7 +71,7 @@ export default async function unfollowUsers(type = "following") {
     // if user has
     // - more than a ratio of 1:2 followers to following
     // - less than 10k followers
-    if (followers_count < 10_000 && ratio >= 3) {
+    if (followers_count < 10_000 && ratio >= 2) {
       userDetails.isUnderground = true;
     }
 
