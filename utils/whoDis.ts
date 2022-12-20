@@ -70,19 +70,19 @@ export default async function unfollowUsers(type = "following") {
     // if user has
     // - more than a ratio of 1:2 followers to following
     // - less than 10k followers
-    if (followers_count < 10_000 && ratio >= 2) {
+    if (followers_count < 10_000 && ratio >= 3) {
       userDetails.isUnderground = true;
     }
 
     // if user has
-    // - more than a ratio of 1:8 followers to following
+    // - more than a ratio of 1:20 followers to following
     // - more than 10k followers
-    if (followers_count > 10_000 && ratio >= 8) {
+    if (followers_count > 10_000 && ratio >= 20) {
       userDetails.isPopular = true;
     }
 
-    // if user follows more than 10k people, they are probably a bot
-    if (following_count > 10_000) {
+    // if user follows more than 4k people, they are not actually engaging
+    if (following_count > 4_000) {
       userDetails.isBot = true;
     }
 
