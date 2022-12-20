@@ -76,7 +76,7 @@ export default async function unfollowUsers(type = "following") {
     }
 
     // if user has
-    // - more than a ratio of 1:10 followers to following
+    // - more than a ratio of 1:8 followers to following
     // - more than 10k followers
     if (followers_count > 10_000 && ratio >= 8) {
       userDetails.isPopular = true;
