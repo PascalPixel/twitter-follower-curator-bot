@@ -76,14 +76,14 @@ export default async function unfollowUsers(type = "following") {
     }
 
     // if user has
-    // - more than a ratio of 1:8 followers to following
+    // - more than a ratio of 1:10 followers to following
     // - more than 10k followers
-    if (followers_count > 10_000 && ratio >= 8) {
+    if (followers_count > 10_000 && ratio >= 10) {
       userDetails.isPopular = true;
     }
 
-    // if user follows more than 10k people, they are probably a bot
-    if (following_count > 10_000) {
+    // if user follows more than 4k people, they are probably a bot
+    if (following_count > 4_000) {
       userDetails.isBot = true;
     }
 
@@ -121,14 +121,12 @@ export default async function unfollowUsers(type = "following") {
 
     // continue conditions
     let willUnfollow = true;
-    if (userDetails.onAllowlist) {
+    if (userDetails.onAllowlist || userDetails.isFollower) {
       willUnfollow = false;
     } else if (
       !userDetails.isBot &&
       !userDetails.isInactive &&
-      (userDetails.isFollower ||
-        userDetails.isUnderground ||
-        userDetails.isPopular)
+      (userDetails.isUnderground || userDetails.isPopular)
     ) {
       willUnfollow = false;
     }
