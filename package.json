@@ -1,9 +1,10 @@
 {
   "scripts": {
     "start": "ts-node ./scripts/main.ts",
-    "whoDis": "ts-node ./scripts/whoDis.ts",
     "unfollow": "ts-node ./scripts/unfollow.ts",
     "supporters": "ts-node ./scripts/supporters.ts",
+    "whoDis": "ts-node ./scripts/whoDis.ts",
+    "activeCount": "ts-node ./scripts/activeCount.ts",
     "partial:updateCache": "ts-node ./scripts/updateCache.ts",
     "partial:reportDifference": "ts-node ./scripts/reportDifference.ts"
   },
