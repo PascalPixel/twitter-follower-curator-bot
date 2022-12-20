@@ -1,6 +1,7 @@
 {
   "scripts": {
     "start": "ts-node ./scripts/main.ts",
+    "whoDis": "ts-node ./scripts/whoDis.ts",
     "unfollow": "ts-node ./scripts/unfollow.ts",
     "supporters": "ts-node ./scripts/supporters.ts",
     "partial:updateCache": "ts-node ./scripts/updateCache.ts",
