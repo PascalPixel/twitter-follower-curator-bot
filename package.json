@@ -2,11 +2,11 @@
   "scripts": {
     "start": "ts-node ./scripts/main.ts",
     "unfollow": "ts-node ./scripts/unfollow.ts",
-    "supporters": "ts-node ./scripts/supporters.ts",
-    "whoDis": "ts-node ./scripts/whoDis.ts",
-    "activeCount": "ts-node ./scripts/activeCount.ts",
     "partial:updateCache": "ts-node ./scripts/updateCache.ts",
-    "partial:reportDifference": "ts-node ./scripts/reportDifference.ts"
+    "partial:reportDifference": "ts-node ./scripts/reportDifference.ts",
+    "beta:supporters": "ts-node ./scripts/supporters.ts",
+    "beta:activeCount": "ts-node ./scripts/activeCount.ts",
+    "beta:whoDis": "ts-node ./scripts/whoDis.ts"
   },
   "dependencies": {
     "@types/node": "^18.11.13",
