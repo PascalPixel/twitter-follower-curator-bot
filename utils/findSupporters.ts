@@ -1,5 +1,5 @@
-import { TweetV2, TwitterApiError } from "twitter-api-v2";
 import twitterClient from "../lib/twitterClient";
+import { retry } from "./retry";
 
 export default async function findSupporters() {
   if (!process.env.TWITTER_USER_ID) {
@@ -20,8 +20,8 @@ export default async function findSupporters() {
   // GET /2/tweets/:id/liking_users
   const likesByUser: { username: string; count: number }[] = [];
 
-  // Create a function to get the liking users for each tweet and update the likesByUser object
-  const getLikingUsers = async (tweet: TweetV2) => {
+  // Loop through each tweet and get the liking users
+  for (const tweet of tweets) {
     try {
       // Get the liking users for the tweet
       const response = await twitterClient.bearer.tweetLikedBy(tweet.id);
@@ -40,45 +40,11 @@ export default async function findSupporters() {
           }
         });
       } else {
-        console.log("Issue", tweet.id);
+        console.log("Issue", tweet.id, response);
       }
     } catch (err) {
-      // TwitterApiError
-      const error = err as TwitterApiError;
-      // Check if the error is a rate limit error
-      if (error.code === 429) {
-        // wait until rate limit resets
-        const rateLimit = error.rateLimit || { reset: 0 };
-        const resetTime = rateLimit.reset * 1000;
-        const now = new Date().getTime();
-        const waitTime = resetTime - now;
-
-        // print minutes and seconds waiting
-        console.log(
-          `Waiting ${Math.floor(waitTime / 1000 / 60)}m ${
-            Math.floor(waitTime / 1000) % 60
-          }s`
-        );
-
-        // wait
-        await new Promise((resolve) => setTimeout(resolve, waitTime));
-
-        // Retry the request
-        await getLikingUsers(tweet);
-      } else {
-        // If the error is not a rate limit error, throw the error and stop the loop
-        throw error;
-      }
+      await retry(err);
     }
-  };
-
-  try {
-    // Loop through each tweet and get the liking users
-    for (const tweet of tweets) {
-      await getLikingUsers(tweet);
-    }
-  } catch (err) {
-    console.log(err);
   }
 
   // Sort the likesByUser object by the number of likes
