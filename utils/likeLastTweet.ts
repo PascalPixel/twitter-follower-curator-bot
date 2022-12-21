@@ -1,4 +1,5 @@
 import { config as loadEnvVariables } from "dotenv";
+import type { UserV2 } from "twitter-api-v2";
 
 import twitterClient from "../lib/twitterClient";
 import { getFollowers } from "./getFollowers";
@@ -40,11 +41,7 @@ export default async function likeLastTweet() {
           isSuperActive = true;
 
           // like last 5 tweets
-          tweets
-            .map((tweet) => tweet.id)
-            .forEach((tweetId) => {
-              tweetIdsToLike.push(tweetId);
-            });
+          tweetIdsToLike.push(lastTweet.id);
         } else if (daysSinceLastTweet < 365) {
           isActive = true;
         }
@@ -100,4 +97,64 @@ export default async function likeLastTweet() {
   }
 
   console.log(`Tweets Liked: ${tweetsLiked}`);
+
+  const handlesOfLikers: UserV2[] = [];
+
+  for (const tweetId of tweetIdsToLike) {
+    try {
+      const response = await twitterClient.bearer.tweetLikedBy(tweetId);
+      if (response && response.data) {
+        const users = response.data;
+        for (const user of users) {
+          handlesOfLikers.push(user);
+        }
+      }
+    } catch (err) {
+      await retry(err);
+      continue;
+    }
+  }
+
+  console.log(`Handles of Likers: ${handlesOfLikers.length}`);
+
+  const tweetIdsOfLikersToLike: string[] = [];
+
+  for (const user of handlesOfLikers) {
+    try {
+      const response = await twitterClient.bearer.userTimeline(user.id, {
+        max_results: 5,
+        "tweet.fields": ["created_at"],
+      });
+
+      // check if last tweet was within 30 days or 365 days
+      if (response?.data?.data?.length) {
+        const tweets = response.data.data;
+        const lastTweet = tweets[0];
+        tweetIdsOfLikersToLike.push(lastTweet.id);
+      }
+    } catch (err) {
+      await retry(err);
+      continue;
+    }
+  }
+
+  console.log(`Tweet Ids of Likers to Like: ${tweetIdsOfLikersToLike.length}`);
+
+  let tweetsLikedOfLikers = 0;
+
+  for (const tweetId of tweetIdsOfLikersToLike) {
+    try {
+      await twitterClient.readWrite.like(
+        process.env.TWITTER_USER_ID || "",
+        tweetId
+      );
+      tweetsLikedOfLikers += 1;
+      console.log(`Liked tweet of liker: ${tweetId}`);
+    } catch (err) {
+      await retry(err);
+      continue;
+    }
+  }
+
+  console.log(`Tweets Liked of Likers: ${tweetsLikedOfLikers}`);
 }
