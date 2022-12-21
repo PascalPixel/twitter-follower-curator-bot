@@ -1,9 +1,9 @@
-import likeLastTweet from "../utils/likeLastTweet";
+import analyzeActives from "../utils/analyzeActives";
 
 async function activeCount() {
   console.log("Starting...");
 
-  await likeLastTweet();
+  await analyzeActives();
 
   console.log("Done!");
 }
