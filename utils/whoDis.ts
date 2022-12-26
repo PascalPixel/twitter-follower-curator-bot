@@ -3,9 +3,6 @@ import { getFollowers } from "./getFollowers";
 export default async function whoDis() {
   const allFollowers = await getFollowers();
 
-  // log a big line
-  console.log("--------------------------------------------------");
-
   const goodFollowers = [...allFollowers]
     .filter(
       // following me 10k+ followers
@@ -28,27 +25,7 @@ export default async function whoDis() {
       const aFollowers = a.public_metrics?.followers_count || 0;
       const bFollowers = b.public_metrics?.followers_count || 0;
       return bFollowers - aFollowers;
-    })
-    .map((follower) => {
-      // print
-      console.log(
-        follower.username,
-        "\t",
-        follower.public_metrics?.followers_count,
-        "\t",
-        follower.public_metrics?.following_count,
-        "\t",
-        Math.round(
-          (follower.public_metrics?.followers_count || 0) /
-            (follower.public_metrics?.following_count || 1)
-        )
-      );
-
-      return follower;
     });
-
-  // log a big line
-  console.log("--------------------------------------------------");
 
   const otherFollowers = [...allFollowers]
     .filter((follower) => {
@@ -76,27 +53,7 @@ export default async function whoDis() {
       const aFollowers = a.public_metrics?.followers_count || 0;
       const bFollowers = b.public_metrics?.followers_count || 0;
       return bFollowers - aFollowers;
-    })
-    .map((follower) => {
-      // print
-      console.log(
-        follower.username,
-        "\t",
-        follower.public_metrics?.followers_count,
-        "\t",
-        follower.public_metrics?.following_count,
-        "\t",
-        Math.round(
-          (follower.public_metrics?.followers_count || 0) /
-            (follower.public_metrics?.following_count || 1)
-        )
-      );
-
-      return follower;
     });
-
-  // log a big line
-  console.log("--------------------------------------------------");
 
   const restFollowers = [...allFollowers]
     .filter((follower) => {
@@ -128,27 +85,7 @@ export default async function whoDis() {
       const aFollowers = a.public_metrics?.followers_count || 0;
       const bFollowers = b.public_metrics?.followers_count || 0;
       return bFollowers - aFollowers;
-    })
-    .map((follower) => {
-      // print
-      console.log(
-        follower.username,
-        "\t",
-        follower.public_metrics?.followers_count,
-        "\t",
-        follower.public_metrics?.following_count,
-        "\t",
-        Math.round(
-          (follower.public_metrics?.followers_count || 0) /
-            (follower.public_metrics?.following_count || 1)
-        )
-      );
-
-      return follower;
     });
-
-  // log a big line
-  console.log("--------------------------------------------------");
 
   const whomeverLeftFollowers = [...allFollowers]
     .filter((follower) => {
@@ -180,25 +117,21 @@ export default async function whoDis() {
       const aFollowers = a.public_metrics?.followers_count || 0;
       const bFollowers = b.public_metrics?.followers_count || 0;
       return bFollowers - aFollowers;
-    })
-    .map((follower) => {
-      // print
-      console.log(
-        follower.username,
-        "\t",
-        follower.public_metrics?.followers_count,
-        "\t",
-        follower.public_metrics?.following_count,
-        "\t",
-        Math.round(
-          (follower.public_metrics?.followers_count || 0) /
-            (follower.public_metrics?.following_count || 1)
-        )
-      );
-
-      return follower;
     });
 
-  // log a big line
-  console.log("--------------------------------------------------");
+  [goodFollowers, otherFollowers, restFollowers, whomeverLeftFollowers].forEach(
+    (followers) => {
+      console.table(
+        followers.map((follower) => [
+          follower.username,
+          follower.public_metrics?.followers_count,
+          follower.public_metrics?.following_count,
+          Math.round(
+            (follower.public_metrics?.followers_count || 0) /
+              (follower.public_metrics?.following_count || 1)
+          ),
+        ])
+      );
+    }
+  );
 }
