@@ -4,6 +4,14 @@ export default async function whoDis() {
   const allFollowers = await getFollowers();
 
   const bigFish = [...allFollowers]
+    // decent ratio
+    .filter(
+      (follower) =>
+        Math.round(
+          (follower.public_metrics?.followers_count || 0) /
+            (follower.public_metrics?.following_count || 1)
+        ) > 1
+    )
     .sort((a, b) => {
       // sort by followers
       return (
