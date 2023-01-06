@@ -88,19 +88,31 @@ export default async function whoDis() {
       );
     });
 
+  // Create a Set to store the usernames of the previous users
+  const previousUsers = new Set();
+
   const groups = [bigFish, greatRatio, greatPeeps, goodPeeps];
 
   groups.forEach((followers) => {
     console.table(
-      followers.map((follower) => [
-        follower.username,
-        follower.public_metrics?.followers_count,
-        follower.public_metrics?.following_count,
-        Math.round(
-          (follower.public_metrics?.followers_count || 0) /
-            (follower.public_metrics?.following_count || 1)
-        ),
-      ])
+      followers
+        // Filter out the users that are in the previousUsers Set
+        .filter((follower) => !previousUsers.has(follower.username))
+        // Map the remaining users to an array with their username, followers count, following count, and ratio
+        .map((follower) => {
+          // Add the username to the previousUsers Set
+          previousUsers.add(follower.username);
+
+          return [
+            follower.username,
+            follower.public_metrics?.followers_count,
+            follower.public_metrics?.following_count,
+            Math.round(
+              (follower.public_metrics?.followers_count || 0) /
+                (follower.public_metrics?.following_count || 1)
+            ),
+          ];
+        })
     );
   });
 }
