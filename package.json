@@ -8,7 +8,8 @@
     "beta:influence": "ts-node ./scripts/influence.ts",
     "beta:tweets": "ts-node ./scripts/tweets.ts",
     "beta:supporters": "ts-node ./scripts/supporters.ts",
-    "beta:activeCount": "ts-node ./scripts/activeCount.ts"
+    "beta:activeCount": "ts-node ./scripts/activeCount.ts",
+    "beta:blockBots": "ts-node ./scripts/blockBots.ts"
   },
   "dependencies": {
     "@types/node": "^18.11.18",
