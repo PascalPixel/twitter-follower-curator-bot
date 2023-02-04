@@ -4,21 +4,23 @@
     "unfollow": "ts-node ./scripts/unfollow.ts",
     "partial:updateCache": "ts-node ./scripts/updateCache.ts",
     "partial:reportDifference": "ts-node ./scripts/reportDifference.ts",
+    "beta:whoDis": "ts-node ./scripts/whoDis.ts",
+    "beta:influence": "ts-node ./scripts/influence.ts",
+    "beta:tweets": "ts-node ./scripts/tweets.ts",
     "beta:supporters": "ts-node ./scripts/supporters.ts",
-    "beta:activeCount": "ts-node ./scripts/activeCount.ts",
-    "beta:whoDis": "ts-node ./scripts/whoDis.ts"
+    "beta:activeCount": "ts-node ./scripts/activeCount.ts"
   },
   "dependencies": {
     "@types/node": "^18.11.18",
     "dotenv": "^16.0.3",
     "node-fetch": "^3.3.0",
     "ts-node": "^10.9.1",
-    "twitter-api-v2": "^1.14.0",
-    "typescript": "^4.9.4"
+    "twitter-api-v2": "^1.14.1",
+    "typescript": "^4.9.5"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.49.0",
-    "@typescript-eslint/parser": "^5.49.0",
-    "eslint": "^8.32.0"
+    "@typescript-eslint/eslint-plugin": "^5.50.0",
+    "@typescript-eslint/parser": "^5.50.0",
+    "eslint": "^8.33.0"
   }
 }
