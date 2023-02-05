@@ -30,4 +30,4 @@ My Twitter account is very old and I'm trying re-active it. It also seemed to be
 ### Force users to unfollow you
 
 - `pnpm run beta:tweets` gets the latest 100 tweets from everyone who follows you
-- `pnpm run beta:blockBots` blocks & unblocks everyone (forcing them to unfollow you) who hasn't tweeted in 10 years, has [less than 10 tweets & 10 followers & 10 following], has never tweeted, or has protected their tweets from being read
+- `pnpm run beta:blockBots` blocks & unblocks everyone (forcing them to unfollow you) who hasn't tweeted in 5 years, has [less than 10 tweets & 10 followers & 10 following], has never tweeted, or has protected their tweets from being read
