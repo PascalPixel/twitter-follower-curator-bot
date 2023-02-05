@@ -2,6 +2,7 @@ import { readFile } from "fs/promises";
 import type { TweetV2, UserV2 } from "twitter-api-v2";
 
 import twitterClient from "../lib/twitterClient";
+import { getFollowers } from "../utils/getFollowers";
 import { retry } from "../utils/retry";
 
 async function findBots() {
@@ -13,6 +14,14 @@ async function findBots() {
     follower: UserV2;
   }[] = JSON.parse(raw);
 
+  const followers = await getFollowers();
+  const followersUsernames = followers.map((follower) => follower.username);
+
+  // only keep userDatas that are still following
+  const users = userDatas.filter((userData) =>
+    followersUsernames.includes(userData.follower.username)
+  );
+
   const error = [];
   const bots = [];
   const ancient = [];
@@ -20,7 +29,7 @@ async function findBots() {
   const active = [];
   const alive = [];
 
-  for (const userData of userDatas) {
+  for (const userData of users) {
     const { response, follower } = userData;
     const rawTweets = response._realData.data;
 
@@ -34,16 +43,10 @@ async function findBots() {
     }
 
     if (!rawTweets) {
-      if ((follower.public_metrics?.followers_count || 0) < 100) {
-        bots.push(follower);
-        continue;
-      } else {
-        error.push(follower);
-        continue;
-      }
+      error.push(follower);
+      continue;
     }
 
-    // last tweet was more than 5 years ago
     if (
       rawTweets &&
       rawTweets[0].created_at &&
@@ -54,23 +57,21 @@ async function findBots() {
       continue;
     }
 
-    // last tweet was more than 365 days ago
     if (
       rawTweets &&
       rawTweets[0].created_at &&
       new Date(rawTweets[0].created_at) <
-        new Date(new Date().getTime() - 365 * 24 * 60 * 60 * 1000)
+        new Date(new Date().getTime() - 1 * 365 * 24 * 60 * 60 * 1000)
     ) {
       inactive.push(follower);
       continue;
     }
 
-    // last tweet was more than 30 days ago
     if (
       rawTweets &&
       rawTweets[0].created_at &&
       new Date(rawTweets[0].created_at) <
-        new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000)
+        new Date(new Date().getTime() - 0.5 * 365 * 24 * 60 * 60 * 1000)
     ) {
       active.push(follower);
       continue;
@@ -79,50 +80,64 @@ async function findBots() {
     alive.push(follower);
   }
 
-  const usersToBlock = [...bots, ...error, ...ancient];
+  console.log("Total:", users.length);
+  console.log(
+    "Error:",
+    error.length,
+    `${Math.round((error.length / users.length) * 100)}%`
+  );
+  console.log(
+    "Bots:",
+    bots.length,
+    `${Math.round((bots.length / users.length) * 100)}%`
+  );
+  console.log(
+    "Ancient:",
+    ancient.length,
+    `${Math.round((ancient.length / users.length) * 100)}%`
+  );
+  console.log(
+    "Inactive:",
+    inactive.length,
+    `${Math.round((inactive.length / users.length) * 100)}%`
+  );
+  console.log(
+    "Active:",
+    active.length,
+    `${Math.round((active.length / users.length) * 100)}%`
+  );
+  console.log(
+    "Alive:",
+    alive.length,
+    `${Math.round((alive.length / users.length) * 100)}%`
+  );
+
+  // block bots
+  const usersToBlock = [
+    // ...error,
+    ...bots,
+    ...ancient,
+  ];
   usersToBlock.sort(
     (a, b) =>
       (a.public_metrics?.followers_count || 0) -
       (b.public_metrics?.followers_count || 0)
   );
-  console.log(usersToBlock);
-
-  console.log("Total:", userDatas.length);
-  console.log(
-    "Error:",
-    error.length,
-    `${Math.round((error.length / userDatas.length) * 100)}%`
-  );
-  console.log(
-    "Bots:",
-    bots.length,
-    `${Math.round((bots.length / userDatas.length) * 100)}%`
-  );
-  console.log(
-    "Ancient:",
-    ancient.length,
-    `${Math.round((ancient.length / userDatas.length) * 100)}%`
-  );
-  console.log(
-    "Inactive:",
-    inactive.length,
-    `${Math.round((inactive.length / userDatas.length) * 100)}%`
-  );
-  console.log(
-    "Active:",
-    active.length,
-    `${Math.round((active.length / userDatas.length) * 100)}%`
-  );
-  console.log(
-    "Alive:",
-    alive.length,
-    `${Math.round((alive.length / userDatas.length) * 100)}%`
-  );
-
-  // block bots
   const userId = process.env.TWITTER_USER_ID || "";
   if (userId) {
-    for (const user of usersToBlock) {
+    for (const [index, user] of usersToBlock.entries()) {
+      // progress bar
+      const total = usersToBlock.length;
+      const percent = 100 - ((total - index) / total) * 100;
+      const bar = "=".repeat(Math.round(percent / 4));
+      const spaces = " ".repeat(25 - bar.length);
+      const timeLeft = (total - index) * 15;
+      const hoursLeft = Math.floor(timeLeft / 3600);
+      const minutesLeft = Math.floor((timeLeft % 3600) / 60);
+      console.log(
+        `[${bar}${spaces}] ${percent.toFixed(0)}% ${hoursLeft}h ${minutesLeft}m`
+      );
+
       try {
         await twitterClient.readWrite.block(userId, user.id);
         await twitterClient.readWrite.unblock(userId, user.id);
