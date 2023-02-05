@@ -72,8 +72,8 @@ export default async function unfollowUsers() {
       userDetails.isBot = true;
     }
 
-    // if user has less than 1_000 followers, they are probably a bot
-    if (followers_count < 1_000) {
+    // if user has less than 100 followers, they are probably a bot
+    if (followers_count < 100) {
       userDetails.isBot = true;
     }
 
